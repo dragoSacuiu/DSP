@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Event {
+struct IprsEvent: IprsEventProtocol {
     let date: String
     let cid: String
     let eventName: String

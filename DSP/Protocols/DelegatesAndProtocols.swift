@@ -8,6 +8,18 @@
 
 import Foundation
 
-protocol ReciversProtocol {
+
+
+protocol ReciverProtocol {
     func getEvents() -> [AccountEvents]
+}
+protocol IprsEventProtocol {
+    var date: String { get }
+    var cid: String { get }
+    var eventName: String { get }
+    var eventType: String { get }
+    var partition: String { get }
+    var zoneOrUser: String { get }
+    var group: String { get }
+    var mac: String { get }
 }

@@ -20,7 +20,7 @@
 		695F95D0214C96AB00C079D4 /* UsersManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95CF214C96AB00C079D4 /* UsersManager.swift */; };
 		695F95D3214C96E500C079D4 /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95D2214C96E500C079D4 /* Login.swift */; };
 		695F95D6214C971C00C079D4 /* AccountEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95D5214C971C00C079D4 /* AccountEvents.swift */; };
-		695F95D9214C975F00C079D4 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95D8214C975F00C079D4 /* Event.swift */; };
+		695F95D9214C975F00C079D4 /* IprsEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95D8214C975F00C079D4 /* IprsEvent.swift */; };
 		695F95DB214C978500C079D4 /* EventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95DA214C978500C079D4 /* EventsManager.swift */; };
 		695F95DE214C97F600C079D4 /* IPRS-7.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95DD214C97F600C079D4 /* IPRS-7.swift */; };
 		695F95E0214C982400C079D4 /* ReciversManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95DF214C982400C079D4 /* ReciversManager.swift */; };
@@ -72,7 +72,7 @@
 		695F95CF214C96AB00C079D4 /* UsersManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsersManager.swift; sourceTree = "<group>"; };
 		695F95D2214C96E500C079D4 /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
 		695F95D5214C971C00C079D4 /* AccountEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountEvents.swift; sourceTree = "<group>"; };
-		695F95D8214C975F00C079D4 /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		695F95D8214C975F00C079D4 /* IprsEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IprsEvent.swift; sourceTree = "<group>"; };
 		695F95DA214C978500C079D4 /* EventsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManager.swift; sourceTree = "<group>"; };
 		695F95DD214C97F600C079D4 /* IPRS-7.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IPRS-7.swift"; sourceTree = "<group>"; };
 		695F95DF214C982400C079D4 /* ReciversManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReciversManager.swift; sourceTree = "<group>"; };
@@ -153,10 +153,10 @@
 		695F95B8214C95B100C079D4 /* DSP */ = {
 			isa = PBXGroup;
 			children = (
-				695EC378215C34D800612AE1 /* Protocols */,
 				695F95EB214C9A3000C079D4 /* ViewControllers */,
-				695F95E1214C98DA00C079D4 /* SystemTools */,
 				695F95DC214C97CA00C079D4 /* Recivers */,
+				695EC378215C34D800612AE1 /* Protocols */,
+				695F95E1214C98DA00C079D4 /* SystemTools */,
 				695F95D7214C974A00C079D4 /* Events */,
 				695F95D4214C970900C079D4 /* Accounts */,
 				695F95D1214C96C500C079D4 /* Security */,
@@ -198,7 +198,7 @@
 		695F95D7214C974A00C079D4 /* Events */ = {
 			isa = PBXGroup;
 			children = (
-				695F95D8214C975F00C079D4 /* Event.swift */,
+				695F95D8214C975F00C079D4 /* IprsEvent.swift */,
 				695F95DA214C978500C079D4 /* EventsManager.swift */,
 			);
 			path = Events;
@@ -207,8 +207,8 @@
 		695F95DC214C97CA00C079D4 /* Recivers */ = {
 			isa = PBXGroup;
 			children = (
-				695F95DD214C97F600C079D4 /* IPRS-7.swift */,
 				695F95DF214C982400C079D4 /* ReciversManager.swift */,
+				695F95DD214C97F600C079D4 /* IPRS-7.swift */,
 			);
 			path = Recivers;
 			sourceTree = "<group>";
@@ -362,7 +362,7 @@
 			files = (
 				690DB44D214D186600BA55FC /* DSPUserMO+CoreDataProperties.swift in Sources */,
 				695F9688214CA60800C079D4 /* EventMO+CoreDataProperties.swift in Sources */,
-				695F95D9214C975F00C079D4 /* Event.swift in Sources */,
+				695F95D9214C975F00C079D4 /* IprsEvent.swift in Sources */,
 				695EC37A215C34F000612AE1 /* DelegatesAndProtocols.swift in Sources */,
 				695F9684214CA60800C079D4 /* TehnicalInfoMO+CoreDataProperties.swift in Sources */,
 				695F9686214CA60800C079D4 /* InterventionMO+CoreDataProperties.swift in Sources */,

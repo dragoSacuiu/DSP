@@ -9,15 +9,12 @@
 import Foundation
 
 class ReciversManager {
-    
-
-    
     var iprsReciver = Iprs()
     
     func getEvents() -> [AccountEvents] {
         var events = [AccountEvents]()
         events.append(contentsOf: iprsReciver.getEvents())
-        
         return events
     }
+    
 }

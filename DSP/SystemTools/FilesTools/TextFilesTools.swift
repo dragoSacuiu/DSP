@@ -17,7 +17,7 @@ class FilesTools {
         return String(cutText)
     }
     
-    func getTextFromFile(from directoryPath: String, fileType fileExtention: String) -> [(FileName: String, Content: [String])] {
+    func getTextFromFile(from directoryPath: String, fileType fileExtention: String) -> [(FileName: String, Content: String)] {
         
         guard ifDirectoryExists(at: directoryPath) else {
             fatalError("No such directory at patch <\(directoryPath)>")
@@ -25,7 +25,7 @@ class FilesTools {
         
         switch fileExtention {
         case "csv":
-            return getTextFromCSV(path:directoryPath)
+            return getTextFromCSVFiles(path:directoryPath)
         default:
             print("Can't handle file format!")
         }
@@ -43,23 +43,41 @@ extension FilesTools {
         return fileManager.fileExists(atPath: path)
     }
     
-    func getTextFromCSV(path: String) -> [(FileName: String, Content: [String])] {
-        var csvFiles = [(FileName: String, Content: [String])]()
+    func emptyTextFile(path: String) {
+        let emptyString = ""
+        do {
+            try emptyString.write(toFile: path, atomically: false, encoding: String.Encoding.utf8)
+        } catch  {
+            fatalError("No file to empty!")
+        }
+    }
+    
+    func getTextFromCSVFiles(path: String) -> [(FileName: String, Content: String)] {
+        var csvFiles = [(FileName: String, Content: String)]()
         let fileManager = FileManager.default
         do {
             let files = try fileManager.contentsOfDirectory(atPath: path)
             for fileName in files {
                 if fileName.hasSuffix("csv") {
-                    let content = try String(contentsOfFile: path+"/\(fileName)", encoding: String.Encoding.utf8).components(separatedBy: "\n")
-                    var csvFile = (FileName: String(), Content: [String]())
-                    csvFile.FileName = fileName
-                    csvFile.Content.append(contentsOf: content)
-                    csvFiles.append(csvFile)
+                    let filePath = path+"/\(fileName)"
+                    let file = FileHandle(forReadingAtPath: filePath)
+                    if file != nil {
+                        let content = file?.readDataToEndOfFile()
+                        emptyTextFile(path: filePath)
+                        file?.closeFile()
+                        let textContent = String(data: content!, encoding: String.Encoding.utf8)
+                        let csvFile = (FileName: fileName, Content: textContent)
+                        csvFiles.append(csvFile as! (FileName: String, Content: String))
+                    }
                 }
             }
         } catch {
             fatalError("No files wihle searching for .csv extention in directory")
         }
         return csvFiles
+    }
+    func replaceCharInString(string: String, charToBeReplaced: String, with char: String) -> String{
+        let modeifiedString = string.replacingOccurrences(of: charToBeReplaced, with: char, options: String.CompareOptions.literal , range: nil)
+        return modeifiedString
     }
 }
