@@ -10,18 +10,18 @@ import Foundation
 
 struct AccountEvents {
     var id: String
-    var events: [IprsEvent]
+    var events: [Event]
     
     init(id: String) {
         self.id = id
-        self.events = [IprsEvent]()
+        self.events = [Event]()
     }
     
     mutating func changeAccountId (newAccountId: String) {
         self.id = newAccountId
     }
     
-    mutating func addEvents (newEvents: [IprsEvent]) {
+    mutating func addEvents (newEvents: [Event]) {
         self.events.append(contentsOf: newEvents)
     }
 }

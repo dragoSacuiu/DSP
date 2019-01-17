@@ -8,10 +8,8 @@
 
 import Foundation
 
-
-
 class Iprs: ReciverProtocol {
-    var iprsCSVLogFilesPath = "smb://vdrs-pc/Users/Public/iprs/201811"
+    var iprsCSVLogFilesPath = "/Volumes/home/iprs/201901"
     var textFilesTools = FilesTools()
     let eventsManager = EventsManager()
     
@@ -37,8 +35,11 @@ extension Iprs {
                     if textLine != "" {
                         let splitTextEvent = textLine.components(separatedBy: ",")
                         let eventName = textFilesTools.replaceCharInString(string: splitTextEvent[5], charToBeReplaced: "\"", with: "")
-                        let cid = splitTextEvent[2].components(separatedBy: " ")
-                        let event = IprsEvent(date: splitTextEvent[1], cid: cid[1], eventName: eventName.uppercased(), eventType: eventsManager.getEventType(eventCode: Int(cid[1])!), partition: splitTextEvent[3], zoneOrUser: splitTextEvent[4], group: cid[0], mac: splitTextEvent[6])
+                        let cidAndGroup = splitTextEvent[2].components(separatedBy: " ")
+                        let cid = cidAndGroup[1]
+                        let group = cidAndGroup[0]
+                        let typeAndPriority = eventsManager.getEventTypeAndPriority(event: )
+                        let event = Event(priority: typeAndPriority.1, date: splitTextEvent[1], cid: cid, eventName: eventName.uppercased(), type: typeAndPriority.0, partition: splitTextEvent[3], zoneOrUser: splitTextEvent[4], group: group)
                         account.events.append(event)
                     }
                 }

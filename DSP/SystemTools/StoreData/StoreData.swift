@@ -10,68 +10,97 @@ import Foundation
 import CoreData
 
 class StoreData {
-    let coreDataManager = CoreDataManager(dataModelName: "Dispatch")
+    let managedObjectContext = CoreDataManager(dataModelName: "DSP").managedObjectContext
+}
+
+////////////////////////////////// ACCOUNTS ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+extension StoreData {
     
-    func storeEvents(AccountEvents: [AccountEvents]) {
-        for account in AccountEvents {
-            let accountMO = storeAccount(Account: account.id)
+    func storeNewAccount(account: Account) {
+        if !checkIfAccountIdExists(account: account.id) {
+        
+        let accountMO = AccountEntity(context: managedObjectContext)
+        accountMO.id = account.id
+        accountMO.type = account.type
+        accountMO.name = account.objective
+        accountMO.client = account.client
+        accountMO.sales = account.sales
+        accountMO.contract = account.contract
+        accountMO.adress1 = account.adress1
+        accountMO.adress2 = account.adress2
+        accountMO.city = account.city
+        accountMO.county = account.county
+        accountMO.technic = account.technic
+        accountMO.system = account.system
+        accountMO.comunicator = account.comunicator
+        accountMO.reciver = account.reciver
+        accountMO.longitude = account.longitude
+        accountMO.latitude = account.latitude
+        accountMO.periodicTest = account.periodicTest
+        } else {
+            print("Cannot create account, account exists")
+        }
+        saveAccount()
+    }
+}
+
+/////////////////////////////// EVENTS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+extension StoreData {
+    
+    func storeEvents(accountEvents: [AccountEvents]) {
+        
+        for account in accountEvents {
+            let accountMO = getAccountMO(accountId: account.id)
             for event in account.events {
-                let eventMOEntity = NSEntityDescription.entity(forEntityName: "EventMo", in: coreDataManager.managedObjectContext)
-                let eventMO = EventMO(entity: eventMOEntity!, insertInto: coreDataManager.managedObjectContext)
+                let eventMO = EventEntity(context: managedObjectContext)
                 eventMO.setValue(event.date, forKey: "date")
-                eventMO.setValue(event.eventName, forKey: "eventName")
+                eventMO.setValue(event.name, forKey: "eventName")
                 eventMO.setValue(event.cid, forKey: "cid")
                 eventMO.setValue(event.group, forKey: "group")
                 eventMO.setValue(event.partition, forKey: "partition")
                 eventMO.setValue(event.zoneOrUser, forKey: "zoneOrUser")
-                eventMO.setValue(event.eventType, forKey: "eventType")
+                eventMO.setValue(event.type, forKey: "eventType")
                 accountMO.addToEvents(eventMO)
             }
         }
     }
-    
-    func storeAccount(Account: String) -> AccountMO {
-        var accountMO = AccountMO(context: coreDataManager.managedObjectContext)
-        let accountsFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "AccountMO")
+}
+
+///////////////////////////// STORE DATA GLOBAL FUNCTIONS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+extension StoreData {
+    func saveAccount() {
         do {
-            let requestedData = try coreDataManager.managedObjectContext.fetch(accountsFetchRequest)
-            for account in requestedData as! [AccountMO] {
-                if (account.value(forKey: "id") as! String) == Account{
-                    accountMO = account
-                } else {
-                    let accountMOEntity = NSEntityDescription.entity(forEntityName: "AccountMO", in: coreDataManager.managedObjectContext)
-                    accountMO = AccountMO(entity: accountMOEntity!, insertInto: coreDataManager.managedObjectContext)
-                }
-            }
-        } catch {
-            print("Faild to fetch Account")
-        }
-        return accountMO
-    }
-    
-    func storeUser(Name: String, Pasword: String) {
-        if userExists(Name: Name) {
-            print("The user already exists!")
-        } else {
-            let userMOEntity = NSEntityDescription.entity(forEntityName: "DSPUserMO", in: coreDataManager.managedObjectContext)
-            let userMO = NSManagedObject(entity: userMOEntity!, insertInto: coreDataManager.managedObjectContext)
-            userMO.setValue(Name, forKey: "name")
-            userMO.setValue(Pasword, forKey: "pasword")
+            try managedObjectContext.save()
+        } catch  {
+            fatalError("couldn't save data")
         }
     }
     
-    func userExists(Name: String) -> Bool {
-        let userFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "UserMO")
+    func getAccountMO(accountId: String) -> AccountEntity {
+        let fetchDescription = NSFetchRequest<NSFetchRequestResult>(entityName: "AccountEntity")
         do {
-            let requestedData = try coreDataManager.managedObjectContext.fetch(userFetchRequest)
-            for user in requestedData as! [DSPUserMO] {
-                if user.name == Name {
-                    return true
+            let fetchResult = try managedObjectContext.fetch(fetchDescription) as! [AccountEntity]
+            for accountMO in fetchResult {
+                if accountMO.id == accountId {
+                    return accountMO
                 }
             }
-        } catch {
-            print("Can't fatch Users")
+        } catch  {
+            fatalError("Cannot fetch object \(accountId) object dose not exist!")
         }
-        return false
+        return AccountEntity(context: managedObjectContext)
+    }
+    
+    func checkIfAccountIdExists (account: String) -> Bool {
+        let fetchAccount = getAccountMO(accountId: account).id
+        guard fetchAccount == account else {
+            print("Check if account exists")
+            return false
+        }
+        return true
     }
 }
+

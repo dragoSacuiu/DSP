@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18C54" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="AccountEntity" representedClassName="AccountEntity" syncable="YES">
+        <attribute name="adress1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="adress2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="city" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="client" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="comunicator" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contract" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="county" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="latitude" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="longitude" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="periodicTest" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="reciver" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sales" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="system" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="technic" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ContactEntity" inverseName="objective" inverseEntity="ContactEntity" syncable="YES"/>
+        <relationship name="events" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="EventEntity" inverseName="account" inverseEntity="EventEntity" syncable="YES"/>
+        <relationship name="objectiveInfo" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ObservationsEntity" inverseName="objective" inverseEntity="ObservationsEntity" syncable="YES"/>
+        <relationship name="partitions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PartitionEntity" inverseName="account" inverseEntity="PartitionEntity" syncable="YES"/>
+        <relationship name="schedeule" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ScheduleEntity" inverseName="objective" inverseEntity="ScheduleEntity" syncable="YES"/>
+        <relationship name="tickets" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TicketEntity" inverseName="objective" inverseEntity="TicketEntity" syncable="YES"/>
+    </entity>
+    <entity name="ActionDetailesEntity" representedClassName="ActionDetailesEntity" syncable="YES">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="detailes" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="ContactEntity" representedClassName="ContactEntity" syncable="YES">
+        <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="phone" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="priority" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="objective" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="contacts" inverseEntity="AccountEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSPUserEntity" representedClassName="DSPUserEntity" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="EmiDetailesEntity" representedClassName="EmiDetailesEntity" syncable="YES">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="detailes" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="EmiEntity" representedClassName="EmiEntity" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="phone" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="EventEntity" representedClassName="EventEntity" syncable="YES">
+        <attribute name="cid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="eventName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="group" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="partition" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="priority" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="zoneOrUser" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="events" inverseEntity="AccountEntity" syncable="YES"/>
+    </entity>
+    <entity name="ObservationsEntity" representedClassName="ObservationsEntity" syncable="YES">
+        <attribute name="date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="observation" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="objective" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="objectiveInfo" inverseEntity="AccountEntity" syncable="YES"/>
+    </entity>
+    <entity name="PartitionEntity" representedClassName="PartitionEntity" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="partitions" inverseEntity="AccountEntity" syncable="YES"/>
+        <relationship name="zones" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ZoneEntity" inverseName="partition" inverseEntity="ZoneEntity" syncable="YES"/>
+    </entity>
+    <entity name="ScheduleEntity" representedClassName="ScheduleEntity" syncable="YES">
+        <attribute name="friday" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="monday" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="saturday" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sunday" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thursday" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="tuesday" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="wednesday" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="objective" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="schedeule" inverseEntity="AccountEntity" syncable="YES"/>
+    </entity>
+    <entity name="TicketEntity" representedClassName="TicketEntity" syncable="YES">
+        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="manager" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="state" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="objective" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="tickets" inverseEntity="AccountEntity" syncable="YES"/>
+    </entity>
+    <entity name="ZoneEntity" representedClassName="ZoneEntity" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="partition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PartitionEntity" inverseName="zones" inverseEntity="PartitionEntity" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="AccountEntity" positionX="98.6015625" positionY="412.4453125" width="128" height="388"/>
+        <element name="ActionDetailesEntity" positionX="-433.98046875" positionY="707.6015625" width="128" height="88"/>
+        <element name="ContactEntity" positionX="330.3203125" positionY="-126.1328125" width="128" height="133"/>
+        <element name="DSPUserEntity" positionX="-471.48046875" positionY="395.19140625" width="128" height="73"/>
+        <element name="EmiDetailesEntity" positionX="-452.140625" positionY="596.5390625" width="128" height="88"/>
+        <element name="EmiEntity" positionX="-458.25390625" positionY="499.80078125" width="128" height="73"/>
+        <element name="EventEntity" positionX="-88.671875" positionY="222.01171875" width="128" height="165"/>
+        <element name="ObservationsEntity" positionX="450.83984375" positionY="256.83984375" width="128" height="103"/>
+        <element name="PartitionEntity" positionX="-233.6328125" positionY="-85.08984375" width="128" height="103"/>
+        <element name="ScheduleEntity" positionX="-561.57421875" positionY="193.25" width="128" height="163"/>
+        <element name="TicketEntity" positionX="419.45703125" positionY="677.30078125" width="128" height="163"/>
+        <element name="ZoneEntity" positionX="108.3125" positionY="-160.41796875" width="128" height="88"/>
+    </elements>
+</model>

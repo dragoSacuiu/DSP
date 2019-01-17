@@ -7,19 +7,23 @@
 //
 
 import Foundation
-
+import CoreData
 
 
 protocol ReciverProtocol {
     func getEvents() -> [AccountEvents]
 }
-protocol IprsEventProtocol {
+protocol EventProtocol {
     var date: String { get }
     var cid: String { get }
-    var eventName: String { get }
-    var eventType: String { get }
+    var name: String { get }
+    var priority: Int { get }
     var partition: String { get }
     var zoneOrUser: String { get }
     var group: String { get }
-    var mac: String { get }
 }
+
+protocol ReciversManagerVCDelegate: class {
+    func reloadTableViewData()
+}
+
