@@ -64,7 +64,7 @@ extension FilesTools {
                     
                     if file != nil {
                         let content = file?.readDataToEndOfFile()
-                        //emptyTextFile(path: filePath)
+                        emptyTextFile(path: filePath)
                         file?.closeFile()
                         let textContent = String(data: content!, encoding: String.Encoding.utf8)
                         let csvFile = (FileName: fileName, Content: textContent)

@@ -8,8 +8,7 @@
 
 import Cocoa
 
-class AlarmsViewController: NSViewController, NSTableViewDataSource, ReciversManagerVCDelegate {
-    var reciversManager: ReciversManager?
+class AlarmsViewController: NSViewController, NSTableViewDataSource, EventsManagerVCDelegate {
     var eventsManager: EventsManager?
 
     var accountTableSelectedRow = 0
@@ -19,34 +18,35 @@ class AlarmsViewController: NSViewController, NSTableViewDataSource, ReciversMan
     @IBOutlet weak var eventsTableView: NSTableView!
     @IBOutlet weak var consoleView: NSTableView!
 
-    @IBOutlet weak var eventImage: NSImageView!
+    @IBOutlet weak var eventAlertImage: NSImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.eventsManager = EventsManager()
-        self.reciversManager = ReciversManager()
         tableViewsInit()
     }
     
     @IBAction func activate(_ sender: NSButton) {
         if sender.state.rawValue == 1 {
             sender.title = "DEACTIVATE                                                                         "
-            if reciversManager != nil {
-                reciversManager!.delegate = self
-                reciversManager!.run(dipatchTimeInterval: 2.0)
-            }
+            eventsManager!.delegate = self
+            eventsManager!.run(getEventsTimeInterval: 2.0)
         } else if sender.state.rawValue == 0 {
             sender.title = "ACTIVATE                                                                           "
-            reciversManager!.stop()
+            eventsManager!.stop()
         }
     }
     
-    func generateAlert(eventPriority: Int) {
-        
-    }
 }
 
 extension AlarmsViewController: NSTableViewDelegate {
+    
+    func generateAlert(for eventType: EventType, event: Event) {
+        eventAlertImage.image = eventType.image
+        NSSound(named: "Glass")?.play()
+        let narator = NSSpeechSynthesizer()
+        narator.startSpeaking(event.name)
+    }
     
     func getPriorityEvent(events: [Event]) -> Event {
         var sortedEvents = events.sorted(by: {$0.priority < $1.priority })
@@ -68,19 +68,6 @@ extension AlarmsViewController: NSTableViewDelegate {
         eventsTableView.reloadData()
     }
     
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        if reciversManager!.accountsEvents.count > 0 {
-            if tableView == accountsTableView {
-                return reciversManager!.accountsEvents.count
-            } else if tableView == eventsTableView {
-                return reciversManager!.accountsEvents[accountTableSelectedRow].events.count
-            } else if tableView == accountDetailesTableView {
-                return 1
-            }
-        }
-        return 0
-    }
-    
     func tableViewSelectionDidChange(_ notification: Notification) {
         let tableViewSelected = notification.object as! NSTableView
         if tableViewSelected == self.accountsTableView {
@@ -89,196 +76,141 @@ extension AlarmsViewController: NSTableViewDelegate {
             eventsTableView.reloadData()
         }
     }
+    
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        if eventsManager!.accountsEvents.count > 0 {
+            if tableView == accountsTableView {
+                return eventsManager!.accountsEvents.count
+            } else if tableView == eventsTableView {
+                return eventsManager!.accountsEvents[accountTableSelectedRow].events.count
+            } else if tableView == accountDetailesTableView {
+                return 1
+            }
+        }
+        return 0
+    }
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         var cell = NSTableCellView()
         
-        if reciversManager!.accountsEvents.count > 0 {
+        func generateCell(identifier: String, value: String, color: CGColor) -> NSTableCellView {
+            let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: identifier), owner: self) as! NSTableCellView
+            cell.wantsLayer = true
+            cell.layer?.backgroundColor = color
+            cell.textField?.textColor = NSColor.black
+            cell.textField?.stringValue = value
+            return cell
+        }
+        
+        if eventsManager!.accountsEvents.count > 0 {
             
-            let accountsEvents = reciversManager!.accountsEvents
-            let accountDetailes = reciversManager!.accountsDetailes
-            let event = accountsEvents[accountTableSelectedRow].events[row]
-            let cid = event.cid
-            let group = event.group
+            let accountsEvents = eventsManager!.accountsEvents
+            let accountDetailes = eventsManager!.accountsDetailes
+            
+            let selectedAccountEvent = accountsEvents[accountTableSelectedRow].events[row]
+            let selectedAccountEventType = eventsManager!.getEventType(eventPriority: selectedAccountEvent.priority, eventGroup: selectedAccountEvent.group)
+            let selectedAccountDetailes = accountDetailes[accountTableSelectedRow]
             
             if tableView == self.accountsTableView {
                 
                 let priorityEvent = getPriorityEvent(events: accountsEvents[row].events)
+                let priorityEventType = eventsManager!.getEventType(eventPriority: priorityEvent.priority, eventGroup: priorityEvent.group)
                 
-                let id = accountsEvents[row].id
-                let dateAndTime = priorityEvent.date.components(separatedBy: " ")
-                let name = priorityEvent.name
-                let objectiveName = accountDetailes[accountsEvents[row].id]!.name!
+                generateAlert(for: priorityEventType, event: priorityEvent)
                 
+                let priorityEventDateAndTime = priorityEvent.date.components(separatedBy: " ")
                 
                 if tableColumn?.identifier.rawValue == "accountTableViewAccountColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "AccountTableAccountCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = id
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "AccountTableAccountCell", value: accountsEvents[row].id, color: priorityEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "accountTableViewTimeColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "AccountTableTimeCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = dateAndTime[1]
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "AccountTableTimeCell", value: priorityEventDateAndTime[1], color: priorityEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "accountTableViewEventColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "AccountTableEventCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = name
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "AccountTableEventCell", value: priorityEvent.name, color: priorityEventType.color)
+    
                 }else if tableColumn?.identifier.rawValue == "accountTableViewObjectiveColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "AccountTableObjectiveCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = objectiveName
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    if let objectiveName = accountDetailes[row].name {
+                        return generateCell(identifier: "AccountTableObjectiveCell", value: objectiveName, color: priorityEventType.color)
+                    } else {
+                        return generateCell(identifier: "AccountTableObjectiveCell", value: "UNREGISTERED ACCOUNT", color: priorityEventType.color)
+                    }
                 }
+                
             } else if tableView == self.eventsTableView {
                 
-                let dateAndTime = event.date.components(separatedBy: " ")
-                let eventType = eventsManager?.getEventType(eventCode: Int(cid)!, eventGroup: group)
-                let eventColor = eventType?.color
-                
                 if tableColumn?.identifier.rawValue == "eventsTableDateColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTableDateCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = "\(dateAndTime[0]) \\ \(dateAndTime[1])"
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableDateCell", value: selectedAccountEvent.date, color: selectedAccountEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "eventsTableEventNameColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTableEventNameCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = event.name
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableEventNameCell", value: selectedAccountEvent.name, color: selectedAccountEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "eventsTableCIDColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTableCIDCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = cid
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableCIDCell", value: selectedAccountEvent.cid, color: selectedAccountEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "eventsTablePartitionColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTablePartitionCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = event.partition
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableCIDCell", value: selectedAccountEvent.partition, color: selectedAccountEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "eventsTableZoneUserColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTableZoneUserCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = event.zoneOrUser
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableZoneUserCell", value: selectedAccountEvent.zoneOrUser, color: selectedAccountEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "eventsTableGroupColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTableGroupCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = group
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableGroupCell", value: selectedAccountEvent.group, color: selectedAccountEventType.color)
+                    
                 }else if tableColumn?.identifier.rawValue == "eventsTableEventTypeColumn" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "eventsTableEventTypeCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = event.type
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = eventColor
-                    return cell
+                    return generateCell(identifier: "eventsTableEventTypeCell", value: selectedAccountEventType.name, color: selectedAccountEventType.color)
+                    
                 }
             } else if tableView == self.accountDetailesTableView {
                 
-                let selectedAccount = accountDetailes[accountsEvents[accountTableSelectedRow].id]
+                let priorityEvent = getPriorityEvent(events: accountsEvents[accountTableSelectedRow].events)
+                let priorityEventType = eventsManager!.getEventType(eventPriority: priorityEvent.priority, eventGroup: priorityEvent.group)
                 
                 if tableColumn?.identifier.rawValue == "accountDetailesAccount" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesAccountCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.id!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesAccountCell", value: selectedAccountDetailes.id!, color: priorityEventType.color)
+    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesType" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesTypeCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.type!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesTypeCell", value: selectedAccountDetailes.type!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesObjective" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesObjectiveCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.name!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesObjectiveCell", value: selectedAccountDetailes.name!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesClient" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesClientCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.client!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesClientCell", value: selectedAccountDetailes.client!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesAdress" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesAdressCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = ("\(selectedAccount!.adress1! ) \(selectedAccount!.adress2!)")
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesAdressCell", value: "\(selectedAccountDetailes.adress1! ) \(selectedAccountDetailes.adress2!)", color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesCity" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesCityCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.city!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesCityCell", value: selectedAccountDetailes.city!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesCounty" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesCountyCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.county!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesCountyCell", value: selectedAccountDetailes.county!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSales" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesSalesCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.sales!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesSalesCell", value: selectedAccountDetailes.sales!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesContract" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesContractCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.contract!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesContractCell", value: selectedAccountDetailes.contract!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesTechnic" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesTechnicCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.technic!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesTechnicCell", value: selectedAccountDetailes.technic!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesArmed" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesArmedCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = "Yes"
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesArmedCell", value: "Yes", color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesReciver" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesReciverCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.reciver!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesReciverCell", value: selectedAccountDetailes.reciver!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSystem" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesSystemCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.system!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesSystemCell", value: selectedAccountDetailes.system!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesComunicator" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesComunicatorCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.comunicator!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesComunicatorCell", value: selectedAccountDetailes.comunicator!, color:  priorityEventType.color)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesTest" {
-                    cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "accountDetailesTestCell"), owner: self) as! NSTableCellView
-                    cell.textField?.stringValue = selectedAccount!.periodicTest!
-                    cell.wantsLayer = true
-                    cell.layer?.backgroundColor = NSColor.red.cgColor
-                    return cell
+                    return generateCell(identifier: "accountDetailesTestCell", value: selectedAccountDetailes.periodicTest!, color:  priorityEventType.color)
+                    
                 }
             }
         }

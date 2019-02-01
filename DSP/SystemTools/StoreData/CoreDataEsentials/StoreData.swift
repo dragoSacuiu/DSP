@@ -18,7 +18,7 @@ class StoreData {
 extension StoreData {
     
     func storeNewAccount(account: Account) {
-        if !checkIfAccountIdExists(account: account.id) {
+        if !accountExistsInDataBase(account: account.id) {
         
         let accountMO = AccountEntity(context: managedObjectContext)
         accountMO.id = account.id
@@ -49,21 +49,18 @@ extension StoreData {
 
 extension StoreData {
     
-    func storeEvents(accountEvents: [AccountEvents]) {
-        
-        for account in accountEvents {
-            let accountMO = getAccountMO(accountId: account.id)
-            for event in account.events {
-                let eventMO = EventEntity(context: managedObjectContext)
-                eventMO.setValue(event.date, forKey: "date")
-                eventMO.setValue(event.name, forKey: "eventName")
-                eventMO.setValue(event.cid, forKey: "cid")
-                eventMO.setValue(event.group, forKey: "group")
-                eventMO.setValue(event.partition, forKey: "partition")
-                eventMO.setValue(event.zoneOrUser, forKey: "zoneOrUser")
-                eventMO.setValue(event.type, forKey: "eventType")
-                accountMO.addToEvents(eventMO)
-            }
+    func storeEvents(accountEvents: AccountEvents) {
+        let accountMO = getAccountMO(accountId: accountEvents.id)
+        for event in accountEvents.events {
+            let eventMO = EventEntity(context: managedObjectContext)
+            eventMO.setValue(event.date, forKey: "date")
+            eventMO.setValue(event.name, forKey: "eventName")
+            eventMO.setValue(event.cid, forKey: "cid")
+            eventMO.setValue(event.group, forKey: "group")
+            eventMO.setValue(event.partition, forKey: "partition")
+            eventMO.setValue(event.zoneOrUser, forKey: "zoneOrUser")
+            eventMO.setValue(event.priority, forKey: "priority")
+            accountMO.addToEvents(eventMO)
         }
     }
 }
@@ -71,6 +68,16 @@ extension StoreData {
 ///////////////////////////// STORE DATA GLOBAL FUNCTIONS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension StoreData {
+    
+    func storeAccoutEvents(accoutsEvents: [AccountEvents]) {
+        for account in accoutsEvents {
+            let fetchAccount = getAccountMO(accountId: account.id)
+            if fetchAccount.id == account.id {
+                storeEvents(accountEvents: account)
+            }
+        }
+    }
+    
     func saveAccount() {
         do {
             try managedObjectContext.save()
@@ -89,15 +96,14 @@ extension StoreData {
                 }
             }
         } catch  {
-            fatalError("Cannot fetch object \(accountId) object dose not exist!")
+            print("Account dose not exists in database")
         }
         return AccountEntity(context: managedObjectContext)
     }
     
-    func checkIfAccountIdExists (account: String) -> Bool {
+    func accountExistsInDataBase (account: String) -> Bool {
         let fetchAccount = getAccountMO(accountId: account).id
         guard fetchAccount == account else {
-            print("Check if account exists")
             return false
         }
         return true

@@ -14,16 +14,17 @@ protocol ReciverProtocol {
     func getEvents() -> [AccountEvents]
 }
 protocol EventProtocol {
+    var priority: Int { get }
     var date: String { get }
     var cid: String { get }
     var name: String { get }
-    var priority: Int { get }
     var partition: String { get }
     var zoneOrUser: String { get }
     var group: String { get }
 }
 
-protocol ReciversManagerVCDelegate: class {
+protocol EventsManagerVCDelegate: class {
     func reloadTableViewData()
 }
+
 

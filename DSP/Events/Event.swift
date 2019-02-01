@@ -13,17 +13,15 @@ struct Event: EventProtocol {
     let date: String
     let cid: String
     let name: String
-    let type: String
     let partition: String
     let zoneOrUser: String
     let group: String
     
-    init(priority: Int, date: String, cid: String, eventName: String, type: String, partition: String, zoneOrUser: String, group: String) {
+    init(priority: Int, date: String, cid: String, eventName: String, partition: String, zoneOrUser: String, group: String) {
         self.priority = priority
         self.date = date
         self.cid = cid
         self.name = eventName
-        self.type = type
         self.partition = partition
         self.zoneOrUser = zoneOrUser
         self.group = group
