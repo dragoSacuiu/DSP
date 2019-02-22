@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Cocoa
 
 struct Event: EventProtocol {
     let priority: Int
@@ -28,5 +29,16 @@ struct Event: EventProtocol {
     }
 }
 
+class EventType {
+    var name: String
+    var color: CGColor
+    var image: NSImage
+    
+    init(name: String, color: CGColor, image: NSImage) {
+        self.name = name
+        self.color = color
+        self.image = image
+    }
+}
 
 

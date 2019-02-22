@@ -46,7 +46,7 @@ extension Iprs {
             for file in filesText {
                 let fileName = file.FileName
                 let accountID = textFilesTools.cutFromTextLine(TextLine: fileName, From: 8, To: 12)
-                var account = AccountEvents(id: accountID)
+                let account = AccountEvents(id: accountID)
                 let textLines = file.Content.components(separatedBy: "\n")
                 for textLine in textLines {
                     if textLine != "" {

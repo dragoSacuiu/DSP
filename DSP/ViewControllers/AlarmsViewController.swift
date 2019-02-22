@@ -8,9 +8,9 @@
 
 import Cocoa
 
-class AlarmsViewController: NSViewController, NSTableViewDataSource, EventsManagerVCDelegate {
+class AlarmsViewController: NSViewController, EventsManagerVCDelegate {
     var eventsManager: EventsManager?
-
+    
     var accountTableSelectedRow = 0
     
     @IBOutlet weak var accountsTableView: NSTableView!
@@ -30,28 +30,27 @@ class AlarmsViewController: NSViewController, NSTableViewDataSource, EventsManag
         if sender.state.rawValue == 1 {
             sender.title = "DEACTIVATE                                                                         "
             eventsManager!.delegate = self
-            eventsManager!.run(getEventsTimeInterval: 2.0)
+            eventsManager!.run(getEventsTimeInterval: 3.0)
         } else if sender.state.rawValue == 0 {
             sender.title = "ACTIVATE                                                                           "
             eventsManager!.stop()
         }
     }
     
+    func generateAlert(for accountAvents: AccountEvents) {
+        if !accountAvents.generatedAlarm {
+            eventAlertImage.image = accountAvents.priorityEventType!.image
+            NSSound(named: "Glass")?.play()
+            if accountAvents.priorityEvent!.priority < 7 {
+                let narator = NSSpeechSynthesizer()
+                narator.startSpeaking(accountAvents.priorityEvent!.name)
+            }
+            accountAvents.generatedAlarm = true
+        }
+    }
 }
 
-extension AlarmsViewController: NSTableViewDelegate {
-    
-    func generateAlert(for eventType: EventType, event: Event) {
-        eventAlertImage.image = eventType.image
-        NSSound(named: "Glass")?.play()
-        let narator = NSSpeechSynthesizer()
-        narator.startSpeaking(event.name)
-    }
-    
-    func getPriorityEvent(events: [Event]) -> Event {
-        var sortedEvents = events.sorted(by: {$0.priority < $1.priority })
-        return sortedEvents[0]
-    }
+extension AlarmsViewController: NSTableViewDelegate, NSTableViewDataSource {
     
     func tableViewsInit() {
         accountsTableView.dataSource = self
@@ -105,111 +104,108 @@ extension AlarmsViewController: NSTableViewDelegate {
         if eventsManager!.accountsEvents.count > 0 {
             
             let accountsEvents = eventsManager!.accountsEvents
-            let accountDetailes = eventsManager!.accountsDetailes
             
+            let selectedAccountEventType = accountsEvents[accountTableSelectedRow].priorityEventType!
             let selectedAccountEvent = accountsEvents[accountTableSelectedRow].events[row]
-            let selectedAccountEventType = eventsManager!.getEventType(eventPriority: selectedAccountEvent.priority, eventGroup: selectedAccountEvent.group)
-            let selectedAccountDetailes = accountDetailes[accountTableSelectedRow]
+            let selectedAccountEventTypeColor = eventsManager!.getEventType(event: selectedAccountEvent).color
+            let selectedAccountDetailes = accountsEvents[accountTableSelectedRow].accountDetailes!
+            
+            
             
             if tableView == self.accountsTableView {
+
+                generateAlert(for: accountsEvents[row])
                 
-                let priorityEvent = getPriorityEvent(events: accountsEvents[row].events)
-                let priorityEventType = eventsManager!.getEventType(eventPriority: priorityEvent.priority, eventGroup: priorityEvent.group)
-                
-                generateAlert(for: priorityEventType, event: priorityEvent)
-                
-                let priorityEventDateAndTime = priorityEvent.date.components(separatedBy: " ")
+                let priorityEventDateAndTime = accountsEvents[row].priorityEvent!.date.components(separatedBy: " ")
+                let priorityEventTypeColor = accountsEvents[row].priorityEventType!.color
                 
                 if tableColumn?.identifier.rawValue == "accountTableViewAccountColumn" {
-                    return generateCell(identifier: "AccountTableAccountCell", value: accountsEvents[row].id, color: priorityEventType.color)
+                    return generateCell(identifier: "AccountTableAccountCell", value: accountsEvents[row].id, color: priorityEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "accountTableViewTimeColumn" {
-                    return generateCell(identifier: "AccountTableTimeCell", value: priorityEventDateAndTime[1], color: priorityEventType.color)
+                    return generateCell(identifier: "AccountTableTimeCell", value: priorityEventDateAndTime[1], color: priorityEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "accountTableViewEventColumn" {
-                    return generateCell(identifier: "AccountTableEventCell", value: priorityEvent.name, color: priorityEventType.color)
+                    return generateCell(identifier: "AccountTableEventCell", value: accountsEvents[row].priorityEvent!.name, color: priorityEventTypeColor)
     
                 }else if tableColumn?.identifier.rawValue == "accountTableViewObjectiveColumn" {
-                    if let objectiveName = accountDetailes[row].name {
-                        return generateCell(identifier: "AccountTableObjectiveCell", value: objectiveName, color: priorityEventType.color)
+                    if let objectiveName = accountsEvents[row].accountDetailes!.objective {
+                        return generateCell(identifier: "AccountTableObjectiveCell", value: objectiveName, color: priorityEventTypeColor)
                     } else {
-                        return generateCell(identifier: "AccountTableObjectiveCell", value: "UNREGISTERED ACCOUNT", color: priorityEventType.color)
+                        return generateCell(identifier: "AccountTableObjectiveCell", value: "UNREGISTERED ACCOUNT", color: priorityEventTypeColor)
                     }
                 }
                 
             } else if tableView == self.eventsTableView {
                 
                 if tableColumn?.identifier.rawValue == "eventsTableDateColumn" {
-                    return generateCell(identifier: "eventsTableDateCell", value: selectedAccountEvent.date, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableDateCell", value: selectedAccountEvent.date, color: selectedAccountEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "eventsTableEventNameColumn" {
-                    return generateCell(identifier: "eventsTableEventNameCell", value: selectedAccountEvent.name, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableEventNameCell", value: selectedAccountEvent.name, color: selectedAccountEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "eventsTableCIDColumn" {
-                    return generateCell(identifier: "eventsTableCIDCell", value: selectedAccountEvent.cid, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableCIDCell", value: selectedAccountEvent.cid, color: selectedAccountEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "eventsTablePartitionColumn" {
-                    return generateCell(identifier: "eventsTableCIDCell", value: selectedAccountEvent.partition, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableCIDCell", value: selectedAccountEvent.partition, color: selectedAccountEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "eventsTableZoneUserColumn" {
-                    return generateCell(identifier: "eventsTableZoneUserCell", value: selectedAccountEvent.zoneOrUser, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableZoneUserCell", value: selectedAccountEvent.zoneOrUser, color: selectedAccountEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "eventsTableGroupColumn" {
-                    return generateCell(identifier: "eventsTableGroupCell", value: selectedAccountEvent.group, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableGroupCell", value: selectedAccountEvent.group, color: selectedAccountEventTypeColor)
                     
                 }else if tableColumn?.identifier.rawValue == "eventsTableEventTypeColumn" {
-                    return generateCell(identifier: "eventsTableEventTypeCell", value: selectedAccountEventType.name, color: selectedAccountEventType.color)
+                    return generateCell(identifier: "eventsTableEventTypeCell", value: selectedAccountEventType.name, color: selectedAccountEventTypeColor)
                     
                 }
             } else if tableView == self.accountDetailesTableView {
                 
-                let priorityEvent = getPriorityEvent(events: accountsEvents[accountTableSelectedRow].events)
-                let priorityEventType = eventsManager!.getEventType(eventPriority: priorityEvent.priority, eventGroup: priorityEvent.group)
+                let priorityEventTypeColor = accountsEvents[row].priorityEventType!.color
                 
                 if tableColumn?.identifier.rawValue == "accountDetailesAccount" {
-                    return generateCell(identifier: "accountDetailesAccountCell", value: selectedAccountDetailes.id!, color: priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesAccountCell", value: selectedAccountDetailes.id!, color: priorityEventTypeColor)
     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesType" {
-                    return generateCell(identifier: "accountDetailesTypeCell", value: selectedAccountDetailes.type!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesTypeCell", value: selectedAccountDetailes.type!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesObjective" {
-                    return generateCell(identifier: "accountDetailesObjectiveCell", value: selectedAccountDetailes.name!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesObjectiveCell", value: selectedAccountDetailes.objective!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesClient" {
-                    return generateCell(identifier: "accountDetailesClientCell", value: selectedAccountDetailes.client!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesClientCell", value: selectedAccountDetailes.client!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesAdress" {
-                    return generateCell(identifier: "accountDetailesAdressCell", value: "\(selectedAccountDetailes.adress1! ) \(selectedAccountDetailes.adress2!)", color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesAdressCell", value: "\(selectedAccountDetailes.adress1! ) \(selectedAccountDetailes.adress2!)",
+                        color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesCity" {
-                    return generateCell(identifier: "accountDetailesCityCell", value: selectedAccountDetailes.city!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesCityCell", value: selectedAccountDetailes.city!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesCounty" {
-                    return generateCell(identifier: "accountDetailesCountyCell", value: selectedAccountDetailes.county!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesCountyCell", value: selectedAccountDetailes.county!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSales" {
-                    return generateCell(identifier: "accountDetailesSalesCell", value: selectedAccountDetailes.sales!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesSalesCell", value: selectedAccountDetailes.sales!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesContract" {
-                    return generateCell(identifier: "accountDetailesContractCell", value: selectedAccountDetailes.contract!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesContractCell", value: selectedAccountDetailes.contract!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesTechnic" {
-                    return generateCell(identifier: "accountDetailesTechnicCell", value: selectedAccountDetailes.technic!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesTechnicCell", value: selectedAccountDetailes.technic!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesArmed" {
-                    return generateCell(identifier: "accountDetailesArmedCell", value: "Yes", color:  priorityEventType.color)
-                    
-                } else if tableColumn?.identifier.rawValue == "accountDetailesReciver" {
-                    return generateCell(identifier: "accountDetailesReciverCell", value: selectedAccountDetailes.reciver!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesArmedCell", value: "Yes", color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSystem" {
-                    return generateCell(identifier: "accountDetailesSystemCell", value: selectedAccountDetailes.system!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesSystemCell", value: selectedAccountDetailes.system!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesComunicator" {
-                    return generateCell(identifier: "accountDetailesComunicatorCell", value: selectedAccountDetailes.comunicator!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesComunicatorCell", value: selectedAccountDetailes.comunicator!, color: priorityEventTypeColor)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesTest" {
-                    return generateCell(identifier: "accountDetailesTestCell", value: selectedAccountDetailes.periodicTest!, color:  priorityEventType.color)
+                    return generateCell(identifier: "accountDetailesTestCell", value: selectedAccountDetailes.periodicTest!, color: priorityEventTypeColor)
                     
                 }
             }

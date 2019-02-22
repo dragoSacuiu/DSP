@@ -10,13 +10,13 @@ import Foundation
 
 class UsersManager {
     var defaultUser = User(Name: "admin", Password: "12345")
-    var activeUser: User
+    static var activeUser = "Sacuiu Dragos"
     var users = [User]()
     
-    init(LoginUser: User) {
-        users.append(defaultUser)
-        self.activeUser = LoginUser
-    }
+//    init(LoginUser: User) {
+//        users.append(defaultUser)
+//        self.activeUser = LoginUser
+//    }
     
     func addUser(Name: String, Password: String) {
         let newUser = User(Name: Name, Password: Password)
@@ -34,7 +34,7 @@ class UsersManager {
     func renameUser(OldName: String, NewName: String) {
         for index in 0..<users.count {
             if OldName == users[index].name {
-                users[index].changeName(NewName: NewName)
+                users[index].name = NewName
             }
         }
     }
@@ -45,7 +45,7 @@ class UsersManager {
         }
         for index in 0..<users.count {
             if defaultUser.name == users[index].name {
-                users[index].changePassword(NewPassword: NewPassword)
+                users[index].password = NewPassword
             }
         }
     }

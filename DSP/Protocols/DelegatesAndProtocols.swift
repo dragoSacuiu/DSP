@@ -25,6 +25,7 @@ protocol EventProtocol {
 
 protocol EventsManagerVCDelegate: class {
     func reloadTableViewData()
+    func generateAlert(for accountAvents: AccountEvents)
 }
 
 

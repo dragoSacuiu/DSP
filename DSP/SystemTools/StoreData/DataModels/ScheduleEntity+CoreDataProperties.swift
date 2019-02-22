@@ -2,8 +2,8 @@
 //  ScheduleEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 04/12/2018.
-//  Copyright © 2018 Sacuiu Dragos. All rights reserved.
+//  Created by Sacuiu Dragos on 01/02/2019.
+//  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
 
@@ -24,6 +24,6 @@ extension ScheduleEntity {
     @NSManaged public var thursday: String?
     @NSManaged public var tuesday: String?
     @NSManaged public var wednesday: String?
-    @NSManaged public var objective: AccountEntity?
+    @NSManaged public var account: AccountEntity?
 
 }

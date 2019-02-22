@@ -2,8 +2,8 @@
 //  ActionDetailesEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 04/12/2018.
-//  Copyright © 2018 Sacuiu Dragos. All rights reserved.
+//  Created by Sacuiu Dragos on 17/02/2019.
+//  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
 
@@ -20,5 +20,6 @@ extension ActionDetailesEntity {
     @NSManaged public var date: NSDate?
     @NSManaged public var detailes: String?
     @NSManaged public var user: String?
+    @NSManaged public var account: AccountEntity?
 
 }

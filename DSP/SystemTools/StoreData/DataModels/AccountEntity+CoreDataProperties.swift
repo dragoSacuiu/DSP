@@ -2,8 +2,8 @@
 //  AccountEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 12/12/2018.
-//  Copyright © 2018 Sacuiu Dragos. All rights reserved.
+//  Created by Sacuiu Dragos on 19/02/2019.
+//  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
 
@@ -27,19 +27,38 @@ extension AccountEntity {
     @NSManaged public var id: String?
     @NSManaged public var latitude: String?
     @NSManaged public var longitude: String?
-    @NSManaged public var name: String?
+    @NSManaged public var objective: String?
     @NSManaged public var periodicTest: String?
-    @NSManaged public var reciver: String?
     @NSManaged public var sales: String?
     @NSManaged public var system: String?
     @NSManaged public var technic: String?
     @NSManaged public var type: String?
+    @NSManaged public var status: String?
+    @NSManaged public var actionDetailes: NSSet?
     @NSManaged public var contacts: NSSet?
+    @NSManaged public var emiDetails: NSSet?
     @NSManaged public var events: NSSet?
-    @NSManaged public var objectiveInfo: NSSet?
+    @NSManaged public var observations: NSSet?
     @NSManaged public var partitions: NSSet?
     @NSManaged public var schedeule: ScheduleEntity?
     @NSManaged public var tickets: NSSet?
+
+}
+
+// MARK: Generated accessors for actionDetailes
+extension AccountEntity {
+
+    @objc(addActionDetailesObject:)
+    @NSManaged public func addToActionDetailes(_ value: ActionDetailesEntity)
+
+    @objc(removeActionDetailesObject:)
+    @NSManaged public func removeFromActionDetailes(_ value: ActionDetailesEntity)
+
+    @objc(addActionDetailes:)
+    @NSManaged public func addToActionDetailes(_ values: NSSet)
+
+    @objc(removeActionDetailes:)
+    @NSManaged public func removeFromActionDetailes(_ values: NSSet)
 
 }
 
@@ -60,6 +79,23 @@ extension AccountEntity {
 
 }
 
+// MARK: Generated accessors for emiDetails
+extension AccountEntity {
+
+    @objc(addEmiDetailsObject:)
+    @NSManaged public func addToEmiDetails(_ value: EmiDetailesEntity)
+
+    @objc(removeEmiDetailsObject:)
+    @NSManaged public func removeFromEmiDetails(_ value: EmiDetailesEntity)
+
+    @objc(addEmiDetails:)
+    @NSManaged public func addToEmiDetails(_ values: NSSet)
+
+    @objc(removeEmiDetails:)
+    @NSManaged public func removeFromEmiDetails(_ values: NSSet)
+
+}
+
 // MARK: Generated accessors for events
 extension AccountEntity {
 
@@ -77,20 +113,20 @@ extension AccountEntity {
 
 }
 
-// MARK: Generated accessors for objectiveInfo
+// MARK: Generated accessors for observations
 extension AccountEntity {
 
-    @objc(addObjectiveInfoObject:)
-    @NSManaged public func addToObjectiveInfo(_ value: ObservationsEntity)
+    @objc(addObservationsObject:)
+    @NSManaged public func addToObservations(_ value: ObservationsEntity)
 
-    @objc(removeObjectiveInfoObject:)
-    @NSManaged public func removeFromObjectiveInfo(_ value: ObservationsEntity)
+    @objc(removeObservationsObject:)
+    @NSManaged public func removeFromObservations(_ value: ObservationsEntity)
 
-    @objc(addObjectiveInfo:)
-    @NSManaged public func addToObjectiveInfo(_ values: NSSet)
+    @objc(addObservations:)
+    @NSManaged public func addToObservations(_ values: NSSet)
 
-    @objc(removeObjectiveInfo:)
-    @NSManaged public func removeFromObjectiveInfo(_ values: NSSet)
+    @objc(removeObservations:)
+    @NSManaged public func removeFromObservations(_ values: NSSet)
 
 }
 

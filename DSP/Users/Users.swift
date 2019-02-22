@@ -8,19 +8,12 @@
 
 import Foundation
 
-struct User {
+class User {
     var name: String
     var password: String
     
     init(Name: String, Password: String) {
         self.name = Name
         self.password = Password
-    }
-    
-    mutating func changeName(NewName: String) {
-        self.name = NewName
-    }
-    mutating func changePassword(NewPassword: String){
-        self.password = NewPassword
     }
 }

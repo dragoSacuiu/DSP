@@ -2,8 +2,8 @@
 //  ContactEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 04/12/2018.
-//  Copyright © 2018 Sacuiu Dragos. All rights reserved.
+//  Created by Sacuiu Dragos on 22/02/2019.
+//  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
 
@@ -19,9 +19,11 @@ extension ContactEntity {
 
     @NSManaged public var email: String?
     @NSManaged public var name: String?
-    @NSManaged public var phone: String?
-    @NSManaged public var priority: String?
-    @NSManaged public var user: String?
+    @NSManaged public var observations: String?
+    @NSManaged public var phoneNumber: String?
+    @NSManaged public var priority: Int16
+    @NSManaged public var userNumber: Int16
+    @NSManaged public var position: String?
     @NSManaged public var objective: AccountEntity?
 
 }
