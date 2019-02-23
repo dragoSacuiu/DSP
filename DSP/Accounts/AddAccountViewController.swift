@@ -8,9 +8,7 @@
 
 import Cocoa
 
-class AddAccountViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
-    var addPartitionsVC: AddPartitionVC!
-    var addZoneVC: AddZoneVC!
+class AddAccountViewController: NSViewController {
     
     let storeData = StoreData()
     let dateFormater = DateFormatter()
@@ -128,28 +126,6 @@ class AddAccountViewController: NSViewController, NSTableViewDataSource, NSTable
         scheduleTableView.reloadData()
     }
     
-    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
-        if segue.identifier == "addPartitionsSegue" {
-            if let viewController = segue.destinationController as? AddPartitionVC {
-                viewController.delegate = self
-            }
-        } else if segue.identifier == "editPartitionSegue" {
-            if let viewController = segue.destinationController as? AddPartitionVC {
-                viewController.delegate = self
-                viewController.editButtonPressed = true
-            }
-        } else if segue.identifier == "addZonesSegue" {
-            if let viewController = segue.destinationController as? AddZoneVC {
-                viewController.delegate = self
-            }
-        } else if segue.identifier == "editZoneSegue" {
-            if let viewController = segue.destinationController as? AddZoneVC {
-                viewController.delegate = self
-                viewController.editButtonPressed = true
-            }
-        }
-    }
-    
     func getPeriodicTest() -> String {
         let periodicTestOutlets = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
         var selectedPeriodicTestValue: NSButton?
@@ -242,7 +218,38 @@ class AddAccountViewController: NSViewController, NSTableViewDataSource, NSTable
     }
 }
 
-extension AddAccountViewController: AddPartitionDelegate, AddZoneDelegate {
+extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, AddObservationVCDelegate {
+    
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if segue.identifier == "addPartitionsSegue" {
+            if let viewController = segue.destinationController as? AddPartitionVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "editPartitionSegue" {
+            if let viewController = segue.destinationController as? AddPartitionVC {
+                viewController.delegate = self
+                viewController.editButtonPressed = true
+            }
+        } else if segue.identifier == "addZonesSegue" {
+            if let viewController = segue.destinationController as? AddZoneVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "editZoneSegue" {
+            if let viewController = segue.destinationController as? AddZoneVC {
+                viewController.delegate = self
+                viewController.editButtonPressed = true
+            }
+        } else if segue.identifier == "addObservationSegue" {
+            if let viewController = segue.destinationController as? AddObservationVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "editObservationSegue" {
+            if let viewController = segue.destinationController as? AddObservationVC {
+                viewController.delegate = self
+                viewController.editButtonPressed = true
+            }
+        }
+    }
 
     func addPartition(number: Int, name: String) {
         storeData.storePartition(number: number, name: name)
@@ -250,21 +257,30 @@ extension AddAccountViewController: AddPartitionDelegate, AddZoneDelegate {
     }
     
     func getPartition() -> PartitionEntity {
-        return storeData.getPartition(partitionNumber: partirionsTableViewSelectedRow)
+        return storeData.getPartition(selectedPartition: partirionsTableViewSelectedRow)
     }
     
     func addZone(number: Int, name: String) {
-        
         storeData.storeZone(partitionNumber: partirionsTableViewSelectedRow, newZoneNumber: number, newZoneName: name)
         zonesTableView.reloadData()
     }
     
     func getZone() -> ZoneEntity {
-        return storeData.getZone(partitionNumber: partirionsTableViewSelectedRow, zoneNumber: zonesTableViewselectedRow)
+        return storeData.getZone(selectedPartition: partirionsTableViewSelectedRow, selectedZone: zonesTableViewselectedRow)
+    }
+    
+    func addObservation(observation: String) {
+        storeData.storeObservation(observation: observation)
+        observationsTableView.reloadData()
+    }
+    
+    func getObservation() -> String {
+        let observations = account?.observations!.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
+        return observations[observationsTableViewselectedRow].observation!
     }
 }
 
-extension AddAccountViewController {
+extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
     
     func tableViewInit() {
         scheduleTableView.delegate = self
@@ -420,15 +436,17 @@ extension AddAccountViewController {
                 return generateCell(identifier: "emiDetailesEmiDetailCell", value: emiDetail.detailes!)
             }
         } else if tableView == observationsTableView {
-            let observation = account?.observations?.sortedArray(using: [dateSortDescriptor])[row] as! ObservationsEntity
-            if tableColumn?.identifier.rawValue == "observationsTableDateColumn"{
-                return generateCell(identifier: "observationsTableDateCell", value: dateFormater.string(from: observation.date! as Date))
+            let observations = storeData.account!.observations!.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
+            let observation = observations[row]
+        
+            if tableColumn?.identifier.rawValue == "observationsDateColumn"{
+                return generateCell(identifier: "observationsDateCell", value: dateFormater.string(from: observation.date! as Date))
             }
-            if tableColumn?.identifier.rawValue == "observationsTableUsersColumn"{
-                return generateCell(identifier: "observationsTableUserCell", value: observation.user!)
+            if tableColumn?.identifier.rawValue == "observationsUserColumn"{
+                return generateCell(identifier: "observationsUserCell", value: observation.user!)
             }
-            if tableColumn?.identifier.rawValue == "observationsTableObservationsColumn"{
-                return generateCell(identifier: "observationsTableObservationCell", value: observation.observation!)
+            if tableColumn?.identifier.rawValue == "observationsObservationsColumn"{
+                return generateCell(identifier: "observationsObservationsCell", value: "aiurea")
             }
         } else if tableView == ticketsTableView {
             let tickets = storeData.account!.tickets!.sortedArray(using: [dateSortDescriptor]) as! [TicketEntity]

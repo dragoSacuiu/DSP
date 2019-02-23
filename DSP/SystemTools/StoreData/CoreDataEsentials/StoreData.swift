@@ -118,6 +118,22 @@ class StoreData {
         }
     }
     
+    func storeObservation(observation: String) {
+        let newObservation = NSEntityDescription.insertNewObject(forEntityName: "ObservationsEntity", into: managedObjectContext) as! ObservationsEntity
+        newObservation.date = NSDate()
+        newObservation.user = UsersManager.activeUser
+        newObservation.observation = observation
+        account!.addToObservations(newObservation)
+    }
+    
+    func storeEmiDetail(emiDetail: String) {
+        let newEmiDetail = NSEntityDescription.insertNewObject(forEntityName: "EmiDetailesEntity", into: managedObjectContext) as! EmiDetailesEntity
+        newEmiDetail.date = NSDate()
+        newEmiDetail.user = UsersManager.activeUser
+        newEmiDetail.detailes = emiDetail
+        account!.addToEmiDetails(newEmiDetail)
+    }
+    
     func storeContact(priority: Int, name: String, userNumber: Int, phoneNumber: String, email: String, observations: String) {
         let newContact = ContactEntity(context: managedObjectContext)
         newContact.priority = Int16(priority)
@@ -127,22 +143,6 @@ class StoreData {
         newContact.email = email
         newContact.observations = observations
         account!.contacts?.adding(newContact)
-    }
-    
-    func storeEmiDetail(emiDetail: String) {
-        let newEmiDetail = EmiDetailesEntity(context: managedObjectContext)
-        newEmiDetail.date = NSDate()
-        newEmiDetail.user = UsersManager.activeUser
-        newEmiDetail.detailes = emiDetail
-        account!.emiDetails?.adding(newEmiDetail)
-    }
-    
-    func storeObservation(observation: String) {
-        let newObservation = ObservationsEntity(context: managedObjectContext)
-        newObservation.date = NSDate()
-        newObservation.user = UsersManager.activeUser
-        newObservation.observation = observation
-        account!.observations?.adding(newObservation)
     }
     
     func storeTicket(ticketType: String, manager: String, ticketContent: String) {
@@ -182,7 +182,7 @@ extension StoreData {
         do {
             let fetchResult = try managedObjectContext.fetch(fetchDescription) as! [TicketNumberEntity]
             if fetchResult.count == 0 {
-                let firstTicketNumber = TicketNumberEntity(context: managedObjectContext)
+                let firstTicketNumber = NSEntityDescription.insertNewObject(forEntityName: "TicketNumber", into: managedObjectContext) as! TicketNumberEntity
                 firstTicketNumber.number = 100000
             } else {
                 return String(fetchResult[0].number + 1)
@@ -193,57 +193,36 @@ extension StoreData {
         return "????????"
     }
 
-    func getPartition(partitionNumber: Int) -> PartitionEntity {
-        let partitions = getPartitions()
-        for partition in partitions {
-            if partition.number == partitionNumber {
-                return partition
-            }
-        }
-        return PartitionEntity()
+    func getPartition(selectedPartition: Int) -> PartitionEntity {
+        let partitions = account?.partitions?.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+        return partitions[selectedPartition]
     }
     
-    func getPartitions() -> [PartitionEntity] {
-        return account!.partitions!.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+    func getZone(selectedPartition: Int, selectedZone: Int) -> ZoneEntity {
+        let partitions = account?.partitions?.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+        let partition = partitions[selectedPartition]
+        let zones = partition.zones?.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity]
+        return zones[selectedZone]
     }
     
-    func getZone(partitionNumber: Int, zoneNumber: Int) -> ZoneEntity {
-        let zones = getZones(partitionNumber: partitionNumber)
-        for zone in zones {
-            if zone.number == zoneNumber{
-                return zone
-            }
-        }
-        return ZoneEntity()
+    func getObservation(selectedObservation: Int) -> String {
+        let observations = account?.observations?.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
+        return observations[selectedObservation].observation!
     }
     
-    func getZones(partitionNumber: Int) -> [ZoneEntity] {
-        let partition = getPartition(partitionNumber: partitionNumber)
-        let zones = partition.zones!.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity]
-        return zones
+    func getEmiDetail(selectedEmiDetail: Int) -> String {
+        let emiDetails = account?.emiDetails?.sortedArray(using: [dateSortDescriptor]) as! [EmiDetailesEntity]
+        return emiDetails[selectedEmiDetail].detailes!
     }
     
-    func getContacts() -> [ContactEntity] {
-        var contacts = [ContactEntity]()
-        for contactItem in account!.contacts!.sortedArray(using: [dateSortDescriptor]) {
-            let contact = contactItem as! ContactEntity
-            contacts.append(contact)
-        }
-        return contacts
+    func getContact(selectedContact: Int) -> ContactEntity {
+        let contacts = account?.contacts?.sortedArray(using: [dateSortDescriptor]) as! [ContactEntity]
+        return contacts[selectedContact]
     }
     
-    func getEmiDetail(date: Date) -> EmiDetailesEntity {
-        for item in account!.emiDetails! {
-            let fetchEmiDetail = item as! EmiDetailesEntity
-            if fetchEmiDetail.date! as Date == date {
-                return fetchEmiDetail
-            }
-        }
-        return EmiDetailesEntity()
-    }
-    
-    func getEmiDetailes() -> [EmiDetailesEntity] {
-        return account!.emiDetails!.sortedArray(using: [dateSortDescriptor]) as! [EmiDetailesEntity]
+    func getTicket(selectedTicket: Int) -> TicketEntity {
+        let tickets = account?.tickets?.sortedArray(using: [dateSortDescriptor]) as! [TicketEntity]
+        return tickets[selectedTicket]
     }
     
 }

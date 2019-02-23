@@ -8,13 +8,13 @@
 
 import Cocoa
 
-protocol AddZoneDelegate {
+protocol AddZoneVCDelegate {
     func addZone(number: Int, name: String)
     func getZone() -> ZoneEntity
 }
 
 class AddZoneVC: NSViewController {
-    var delegate: AddZoneDelegate?
+    var delegate: AddZoneVCDelegate?
     
     var editButtonPressed = false
     

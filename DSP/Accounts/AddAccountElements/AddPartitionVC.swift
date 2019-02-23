@@ -8,13 +8,13 @@
 
 import Cocoa
 
-protocol AddPartitionDelegate {
+protocol AddPartitionVCDelegate {
     func addPartition(number: Int, name: String)
     func getPartition() -> PartitionEntity
 }
 
 class AddPartitionVC: NSViewController {
-    var delegate: AddPartitionDelegate?
+    var delegate: AddPartitionVCDelegate?
     
     var editButtonPressed = false
 
