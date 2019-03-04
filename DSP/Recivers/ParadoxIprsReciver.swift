@@ -9,8 +9,10 @@
 import Foundation
 
 class Iprs: ReciverProtocol {
-    var iprsCSVLogFilesPath = "/Volumes/home/iprs/201902"
+    
+    var iprsCSVLogFilesPath = "/Volumes/home/iprs/201903"
     var textFilesTools = FilesTools()
+    var blackList = [String]()
     
     let medicalAlarmCID    = (firstCode: 100, lastCode: 109, priority: 1)
     let fireAlarmCID       = (firstCode: 110, lastCode: 119, priority: 2)
@@ -46,25 +48,38 @@ extension Iprs {
             for file in filesText {
                 let fileName = file.FileName
                 let accountID = textFilesTools.cutFromTextLine(TextLine: fileName, From: 8, To: 12)
-                let account = AccountEvents(id: accountID)
-                let textLines = file.Content.components(separatedBy: "\n")
-                for textLine in textLines {
-                    if textLine != "" {
-                        let splitTextEvent = textLine.components(separatedBy: ",")
-                        let eventName = textFilesTools.replaceCharInString(string: splitTextEvent[5], charToBeReplaced: "\"", with: "")
-                        let cidAndGroup = splitTextEvent[2].components(separatedBy: " ")
-                        let date = splitTextEvent[1]
-                        let cid = cidAndGroup[1]
-                        let group = cidAndGroup[0]
-                        let partition = splitTextEvent[3]
-                        let zoneOrUser = splitTextEvent[4]
-                        let priority = getEventPriority(eventCode: Int(cid)!)
-                        let event = Event(priority: priority, date: date, cid: cid, eventName: eventName.uppercased(), partition: partition, zoneOrUser: zoneOrUser, group: group)
-                        account.events.append(event)
+                if !blackList.contains(accountID) {
+                    let account = AccountEvents(id: accountID)
+                    let textLines = file.Content.components(separatedBy: "\n")
+                    for textLine in textLines {
+                        if textLine != "" {
+                            let splitTextEvent = textLine.components(separatedBy: ",")
+                            let eventName = textFilesTools.replaceCharInString(string: splitTextEvent[5], charToBeReplaced: "\"", with: "")
+                            let cidAndGroup = splitTextEvent[2].components(separatedBy: " ")
+                            let cid = cidAndGroup[1]
+                            let group = Int(cidAndGroup[0])!
+                            var partition = splitTextEvent[3]
+                            for _ in partition {
+                                let index = partition.index(partition.startIndex, offsetBy: 0)
+                                if partition[index] == "0" && partition.count > 1 {
+                                    partition.remove(at: index)
+                                } else {break}
+                            }
+                            var zoneOrUser = splitTextEvent[4]
+                            for _ in zoneOrUser {
+                                let index = zoneOrUser.index(zoneOrUser.startIndex, offsetBy: 0)
+                                if zoneOrUser[index] == "0" && zoneOrUser.count > 1 {
+                                    zoneOrUser.remove(at: index)
+                                } else {break}
+                            }
+                            let priority = getEventPriority(eventCode: Int(cid)!)
+                            let event = Event(priority: priority, date: NSDate(), cid: cid, eventName: eventName.uppercased(), partition: Int(partition)!, zoneOrUser: Int(zoneOrUser)!, group: group)
+                            account.events.append(event)
+                        }
                     }
-                }
-                if account.events.count > 0 {
-                    accountEvents.append(account)
+                    if account.events.count > 0 {
+                        accountEvents.append(account)
+                    }
                 }
             }
         }

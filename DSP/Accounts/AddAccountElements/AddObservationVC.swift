@@ -10,12 +10,14 @@ import Cocoa
 
 protocol AddObservationVCDelegate {
     func addObservation(observation: String)
-    func getObservation() -> String
+    func getObservation() -> ObservationsEntity
+    func reloadObservationsTableView()
 }
 
 class AddObservationVC: NSViewController {
     var delegate: AddObservationVCDelegate?
     
+    @IBOutlet weak var addObservationButtonOutlet: NSButton!
     @IBOutlet weak var observationTextField: NSTextField!
     
     var editButtonPressed = false
@@ -23,12 +25,22 @@ class AddObservationVC: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         if editButtonPressed {
-            observationTextField.stringValue = delegate!.getObservation()
+            addObservationButtonOutlet.title = "SAVE"
+            observationTextField.stringValue = delegate!.getObservation().observation!
         }
+    }
+    override func viewDidAppear() {
+        view.window!.styleMask.remove(.resizable)
     }
     
     @IBAction func addObservationButton(_ sender: NSButton) {
-        delegate?.addObservation(observation: observationTextField.stringValue)
+        if editButtonPressed {
+            delegate?.getObservation().observation! = observationTextField.stringValue
+        } else {
+            delegate?.addObservation(observation: observationTextField.stringValue)
+            observationTextField.stringValue = ""
+        }
+        delegate?.reloadObservationsTableView()
     }
     
 }

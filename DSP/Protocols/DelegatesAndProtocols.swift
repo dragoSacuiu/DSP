@@ -15,17 +15,14 @@ protocol ReciverProtocol {
 }
 protocol EventProtocol {
     var priority: Int { get }
-    var date: String { get }
+    var date: NSDate { get }
     var cid: String { get }
     var name: String { get }
-    var partition: String { get }
-    var zoneOrUser: String { get }
-    var group: String { get }
+    var partition: Int { get }
+    var zoneOrUser: Int { get }
+    var group: Int { get }
 }
 
-protocol EventsManagerVCDelegate: class {
-    func reloadTableViewData()
-    func generateAlert(for accountAvents: AccountEvents)
-}
+
 
 

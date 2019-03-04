@@ -2,7 +2,7 @@
 //  AccountEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 19/02/2019.
+//  Created by Sacuiu Dragos on 02/03/2019.
 //  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
@@ -30,10 +30,10 @@ extension AccountEntity {
     @NSManaged public var objective: String?
     @NSManaged public var periodicTest: String?
     @NSManaged public var sales: String?
+    @NSManaged public var status: String?
     @NSManaged public var system: String?
     @NSManaged public var technic: String?
     @NSManaged public var type: String?
-    @NSManaged public var status: String?
     @NSManaged public var actionDetailes: NSSet?
     @NSManaged public var contacts: NSSet?
     @NSManaged public var emiDetails: NSSet?

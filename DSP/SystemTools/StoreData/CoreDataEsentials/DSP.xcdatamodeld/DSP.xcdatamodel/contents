@@ -18,14 +18,15 @@
         <attribute name="system" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="technic" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
-        <relationship name="actionDetailes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ActionDetailesEntity" inverseName="account" inverseEntity="ActionDetailesEntity" syncable="YES"/>
-        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ContactEntity" inverseName="objective" inverseEntity="ContactEntity" syncable="YES"/>
-        <relationship name="emiDetails" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="EmiDetailesEntity" inverseName="account" inverseEntity="EmiDetailesEntity" syncable="YES"/>
-        <relationship name="events" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="EventEntity" inverseName="account" inverseEntity="EventEntity" syncable="YES"/>
-        <relationship name="observations" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ObservationsEntity" inverseName="account" inverseEntity="ObservationsEntity" syncable="YES"/>
-        <relationship name="partitions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PartitionEntity" inverseName="account" inverseEntity="PartitionEntity" syncable="YES"/>
-        <relationship name="schedeule" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ScheduleEntity" inverseName="account" inverseEntity="ScheduleEntity" syncable="YES"/>
-        <relationship name="tickets" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TicketEntity" inverseName="account" inverseEntity="TicketEntity" syncable="YES"/>
+        <relationship name="actionDetailes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ActionDetailesEntity" inverseName="account" inverseEntity="ActionDetailesEntity" syncable="YES"/>
+        <relationship name="blackList" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BlackListEntity" inverseName="account" inverseEntity="BlackListEntity" syncable="YES"/>
+        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ContactEntity" inverseName="objective" inverseEntity="ContactEntity" syncable="YES"/>
+        <relationship name="emiDetails" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="EmiDetailesEntity" inverseName="account" inverseEntity="EmiDetailesEntity" syncable="YES"/>
+        <relationship name="events" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="EventEntity" inverseName="account" inverseEntity="EventEntity" syncable="YES"/>
+        <relationship name="observations" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ObservationsEntity" inverseName="account" inverseEntity="ObservationsEntity" syncable="YES"/>
+        <relationship name="partitions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PartitionEntity" inverseName="account" inverseEntity="PartitionEntity" syncable="YES"/>
+        <relationship name="schedeule" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="ScheduleEntity" inverseName="account" inverseEntity="ScheduleEntity" syncable="YES"/>
+        <relationship name="tickets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TicketEntity" inverseName="account" inverseEntity="TicketEntity" syncable="YES"/>
     </entity>
     <entity name="ActionDetailesEntity" representedClassName="ActionDetailesEntity" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
@@ -34,8 +35,11 @@
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="actionDetailes" inverseEntity="AccountEntity" syncable="YES"/>
     </entity>
     <entity name="BlackListEntity" representedClassName="BlackListEntity" syncable="YES">
-        <attribute name="accountId" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="reason" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="accountID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="details" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="account" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="blackList" inverseEntity="AccountEntity" syncable="YES"/>
     </entity>
     <entity name="ContactEntity" representedClassName="ContactEntity" syncable="YES">
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
@@ -46,10 +50,6 @@
         <attribute name="priority" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="userNumber" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <relationship name="objective" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="contacts" inverseEntity="AccountEntity" syncable="YES"/>
-    </entity>
-    <entity name="DSPUserEntity" representedClassName="DSPUserEntity" syncable="YES">
-        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="EmiDetailesEntity" representedClassName="EmiDetailesEntity" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
@@ -63,13 +63,18 @@
     </entity>
     <entity name="EventEntity" representedClassName="EventEntity" syncable="YES">
         <attribute name="cid" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="eventName" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="group" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="partition" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="group" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="partition" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="priority" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="zoneOrUser" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="zoneOrUser" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="events" inverseEntity="AccountEntity" syncable="YES"/>
+    </entity>
+    <entity name="ManagerEntity" representedClassName="ManagerEntity" syncable="YES">
+        <attribute name="countys" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="ObservationsEntity" representedClassName="ObservationsEntity" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
@@ -97,7 +102,7 @@
         <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="manager" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="status" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
@@ -106,25 +111,30 @@
     <entity name="TicketNumberEntity" representedClassName="TicketNumberEntity" syncable="YES">
         <attribute name="number" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
     </entity>
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="ZoneEntity" representedClassName="ZoneEntity" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="number" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <relationship name="partition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PartitionEntity" inverseName="zones" inverseEntity="PartitionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="AccountEntity" positionX="98.6015625" positionY="412.4453125" width="128" height="420"/>
+        <element name="AccountEntity" positionX="98.6015625" positionY="412.4453125" width="128" height="433"/>
         <element name="ActionDetailesEntity" positionX="-433.98046875" positionY="707.6015625" width="128" height="103"/>
-        <element name="BlackListEntity" positionX="-360" positionY="-9" width="128" height="75"/>
+        <element name="BlackListEntity" positionX="-485.01953125" positionY="65.8359375" width="128" height="118"/>
         <element name="ContactEntity" positionX="330.3203125" positionY="-126.1328125" width="128" height="165"/>
-        <element name="DSPUserEntity" positionX="-471.48046875" positionY="395.19140625" width="128" height="73"/>
-        <element name="EmiDetailesEntity" positionX="-452.140625" positionY="596.5390625" width="128" height="103"/>
-        <element name="EmiEntity" positionX="-458.25390625" positionY="499.80078125" width="128" height="73"/>
-        <element name="EventEntity" positionX="-88.671875" positionY="222.01171875" width="128" height="165"/>
+        <element name="EmiDetailesEntity" positionX="-413.44140625" positionY="517.8984375" width="128" height="103"/>
+        <element name="EmiEntity" positionX="-521.2109375" positionY="-460.59375" width="128" height="75"/>
+        <element name="EventEntity" positionX="-305.24609375" positionY="165.19921875" width="128" height="165"/>
+        <element name="ManagerEntity" positionX="-217.6953125" positionY="-495.30078125" width="128" height="88"/>
         <element name="ObservationsEntity" positionX="450.83984375" positionY="256.83984375" width="128" height="105"/>
-        <element name="PartitionEntity" positionX="-233.6328125" positionY="-85.08984375" width="128" height="105"/>
+        <element name="PartitionEntity" positionX="-154.72265625" positionY="-92.54296875" width="128" height="105"/>
         <element name="ScheduleEntity" positionX="-561.57421875" positionY="193.25" width="128" height="165"/>
         <element name="TicketEntity" positionX="419.45703125" positionY="677.30078125" width="128" height="165"/>
-        <element name="TicketNumberEntity" positionX="-360" positionY="-9" width="128" height="60"/>
-        <element name="ZoneEntity" positionX="108.3125" positionY="-160.41796875" width="128" height="90"/>
+        <element name="TicketNumberEntity" positionX="-424.48828125" positionY="-114.078125" width="128" height="60"/>
+        <element name="UserEntity" positionX="-175.51171875" positionY="-365.42578125" width="128" height="73"/>
+        <element name="ZoneEntity" positionX="-348.1640625" positionY="-258.91015625" width="128" height="90"/>
     </elements>
 </model>

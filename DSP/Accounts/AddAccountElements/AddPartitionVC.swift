@@ -11,37 +11,46 @@ import Cocoa
 protocol AddPartitionVCDelegate {
     func addPartition(number: Int, name: String)
     func getPartition() -> PartitionEntity
+    func reloadPartitionsTableView()
 }
 
 class AddPartitionVC: NSViewController {
     var delegate: AddPartitionVCDelegate?
     
     var editButtonPressed = false
+    var partition: PartitionEntity?
 
-    @IBOutlet weak var partitionName: NSTextField!
-    @IBOutlet weak var partitionNumber: NSTextField!
+    @IBOutlet weak var partitionNameTextField: NSTextField!
+    @IBOutlet weak var partitionNumberTextField: NSTextField!
+    @IBOutlet weak var addButtonOutlet: NSButton!
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         if editButtonPressed {
-            let partitionToEdit = delegate?.getPartition()
-            partitionNumber.stringValue = String(partitionToEdit!.number)
-            partitionName.stringValue = partitionToEdit!.name!
+            addButtonOutlet.title = "SAVE"
+            partition = delegate?.getPartition()
+            partitionNumberTextField.stringValue = String(partition!.number)
+            partitionNameTextField.stringValue = partition!.name!
         }
+    }
+    override func viewDidAppear() {
+        view.window!.styleMask.remove(.resizable)
     }
     
     @IBAction func addPartitionButton(_ sender: NSButton) {
-        addPartition()
-        clearFields()
-    }
-    
-    func addPartition() {
-        delegate?.addPartition(number: Int(partitionNumber.stringValue)!, name: partitionName.stringValue)
+        if editButtonPressed {
+            partition?.number = Int16(partitionNumberTextField.stringValue)!
+            partition?.name = partitionNameTextField.stringValue
+        } else {
+            delegate?.addPartition(number: Int(partitionNumberTextField.stringValue)!, name: partitionNameTextField.stringValue)
+            clearFields()
+        }
+        delegate?.reloadPartitionsTableView()
     }
     
     func clearFields() {
-        partitionName.stringValue = ""
-        partitionNumber.stringValue = ""
+        partitionNameTextField.stringValue = ""
+        partitionNumberTextField.stringValue = ""
     }
 }

@@ -2,51 +2,29 @@
 //  UsersManager.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 15/09/2018.
-//  Copyright © 2018 Sacuiu Dragos. All rights reserved.
+//  Created by Sacuiu Dragos on 28/02/2019.
+//  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 
 import Foundation
 
 class UsersManager {
-    var defaultUser = User(Name: "admin", Password: "12345")
-    static var activeUser = "Sacuiu Dragos"
-    var users = [User]()
     
-//    init(LoginUser: User) {
-//        users.append(defaultUser)
-//        self.activeUser = LoginUser
-//    }
+    let storeUsers = StoreUsers()
     
-    func addUser(Name: String, Password: String) {
-        let newUser = User(Name: Name, Password: Password)
-        self.users.append(newUser)
+    static var activeUser = String()
+    
+    func addDefaultUser() {
+        storeUsers.storeUser(name: "dsp", password: "12345")
     }
     
-    func deleteUser(Name: String) {
-        for index in 0..<users.count {
-            if Name == users[index].name {
-                users.remove(at: index)
+    func userIsValid(name: String, password: String) -> Bool {
+        let users = storeUsers.getUsers()
+        for user in users {
+            guard user.name != name || user.password != password else {
+                return true
             }
         }
-    }
-    
-    func renameUser(OldName: String, NewName: String) {
-        for index in 0..<users.count {
-            if OldName == users[index].name {
-                users[index].name = NewName
-            }
-        }
-    }
-    
-    func changePassword(NewPassword: String, ConfirmPassword: String) {
-        guard NewPassword == ConfirmPassword else {
-            return print("Password doesn't match")
-        }
-        for index in 0..<users.count {
-            if defaultUser.name == users[index].name {
-                users[index].password = NewPassword
-            }
-        }
+        return false
     }
 }

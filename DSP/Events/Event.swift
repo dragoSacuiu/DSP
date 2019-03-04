@@ -11,14 +11,14 @@ import Cocoa
 
 struct Event: EventProtocol {
     let priority: Int
-    let date: String
+    let date: NSDate
     let cid: String
     let name: String
-    let partition: String
-    let zoneOrUser: String
-    let group: String
+    let partition: Int
+    let zoneOrUser: Int
+    let group: Int
     
-    init(priority: Int, date: String, cid: String, eventName: String, partition: String, zoneOrUser: String, group: String) {
+    init(priority: Int, date: NSDate, cid: String, eventName: String, partition: Int, zoneOrUser: Int, group: Int) {
         self.priority = priority
         self.date = date
         self.cid = cid

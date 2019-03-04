@@ -10,11 +10,10 @@ import Cocoa
 
 class AddAccountViewController: NSViewController {
     
-    let storeData = StoreData()
+    let storeAccount = StoreAccount()
     let dateFormater = DateFormatter()
     let dspAlert = DspAlert()
     
-    var account: AccountEntity?
     var zones = [ZoneEntity]()
     
     let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
@@ -77,37 +76,49 @@ class AddAccountViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        storeData.createNewAccount()
+        storeAccount.createNewAccount()
         tableViewInit()
         
         dateFormater.timeStyle = .short
         dateFormater.dateStyle = .short
     }
     
+    override func viewDidDisappear() {
+        storeAccount.managedObjectContext.reset()
+    }
+    
     func createAccount() {
-        if accoutIsValid() {
-            let periodicTest = getPeriodicTest()
-            account!.id = accountId.stringValue; account!.objective = objective.stringValue; account!.client = client.stringValue; account!.type = type.stringValue; account!.sales = sales.stringValue
-            account!.contract = contract.stringValue; account!.adress1 = street.stringValue; account!.adress2 = building.stringValue; account!.county = county.stringValue; account!.city = city.stringValue; account!.technic = technic.stringValue
-            account!.system = system.stringValue; account!.comunicator = comunicator.stringValue; account!.longitude = longitude.stringValue; account!.latitude = latitude.stringValue; account!.periodicTest = periodicTest
+        let periodicTest = getPeriodicTest()
+        if accoutIsValid() && allFieldsAreFill() && periodicTest != nil {
+            storeAccount.account!.id = accountId.stringValue; storeAccount.account!.objective = objective.stringValue; storeAccount.account!.client = client.stringValue;
+            storeAccount.account!.type = type.stringValue; storeAccount.account!.sales = sales.stringValue; storeAccount.account!.contract = contract.stringValue;
+            storeAccount.account!.adress1 = street.stringValue; storeAccount.account!.adress2 = building.stringValue; storeAccount.account!.county = county.stringValue;
+            storeAccount.account!.city = city.stringValue; storeAccount.account!.technic = technic.stringValue; storeAccount.account!.system = system.stringValue;
+            storeAccount.account!.comunicator = comunicator.stringValue; storeAccount.account!.longitude = longitude.stringValue; storeAccount.account!.latitude = latitude.stringValue;
+            storeAccount.account!.periodicTest = periodicTest
+            storeAccount.saveContext()
         }
     }
     
     @IBAction func saveAccountButton(_ sender: NSButton) {
         createAccount()
-        
     }
     
     @IBAction func searchButton(_ sender: NSButton) {
-        storeData.createExistingAccount(accountID: accountId.stringValue)
-        if account != nil {
-            displayAccount()
+        if accoutIsValid() {
+            storeAccount.getExistingAccount(accountID: accountId.stringValue)
+            if storeAccount.account != nil {
+                displayAccount()
+            } else {
+                storeAccount.createNewAccount()
+            }
         }
     }
     
     @IBAction func deleteAccountButton(_ sender: NSButton) {
-        
-        clearFields()
+        storeAccount.deleteAccount()
+        storeAccount.saveContext()
+        clearWindowData()
     }
     
     @IBAction func copyAccountButton(_ sender: NSButton) {
@@ -118,23 +129,30 @@ class AddAccountViewController: NSViewController {
 
     }
     
+    @IBAction func removeObservationButton(_ sender: NSButton) {
+        storeAccount.removeObservation(selectedObservationIndex: observationsTableViewselectedRow)
+        observationsTableView.reloadData()
+    }
+    @IBAction func removeEmiDetailButton(_ sender: NSButton) {
+        storeAccount.removeEmiDetail(selectedEmiDetailIndex: emiDetailsTableViewselectedRow)
+        emiDetailsTableView.reloadData()
+    }
+    
     @IBAction func addScheduleButton(_ sender: NSButton) {
         let daySelected = daySelector.titleOfSelectedItem!
         let startTime = dateFormater.string(from: startTimePicker.dateValue).components(separatedBy: " ")[1]
         let endTime = dateFormater.string(from: endTimePicker.dateValue).components(separatedBy: " ")[1]
-        storeData.storeSchedule(day: daySelected, startTime: startTime, endTime: endTime)
+        storeAccount.storeSchedule(day: daySelected, startTime: startTime, endTime: endTime)
         scheduleTableView.reloadData()
     }
     
-    func getPeriodicTest() -> String {
+    func getPeriodicTest() -> String? {
         let periodicTestOutlets = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
         var selectedPeriodicTestValue: NSButton?
         for periodicTestOutlet in periodicTestOutlets {
             if periodicTestOutlet!.state == .on {
                 selectedPeriodicTestValue = periodicTestOutlet
                 break
-            } else {
-                print("No periodic test selected")
             }
         }
         switch selectedPeriodicTestValue {
@@ -147,7 +165,8 @@ class AddAccountViewController: NSViewController {
         case test3HOutlet:
             return "3H"
         default:
-            return ""
+            dspAlert.showAlert(message: "No periodic test selected!")
+            return nil
         }
     }
     
@@ -161,21 +180,23 @@ class AddAccountViewController: NSViewController {
     }
     
     func displayAccount() {
-        objective.stringValue = account!.objective!
-        client.stringValue = account!.client!
-        type.stringValue = account!.type!
-        sales.stringValue = account!.sales!
-        contract.stringValue = account!.contract!
-        street.stringValue = account!.adress1!
-        building.stringValue = account!.adress2!
-        county.stringValue = account!.county!
-        city.stringValue = account!.city!
-        technic.stringValue = account!.technic!
-        system.stringValue = account!.system!
-        comunicator.stringValue = account!.comunicator!
-        longitude.stringValue = account!.longitude!
-        latitude.stringValue = account!.longitude!
-        selectPeriodicTest(periodicTest: account!.periodicTest!)
+        objective.stringValue = storeAccount.account!.objective!
+        client.stringValue = storeAccount.account!.client!
+        type.stringValue = storeAccount.account!.type!
+        sales.stringValue = storeAccount.account!.sales!
+        contract.stringValue = storeAccount.account!.contract!
+        street.stringValue = storeAccount.account!.adress1!
+        building.stringValue = storeAccount.account!.adress2!
+        county.stringValue = storeAccount.account!.county!
+        city.stringValue = storeAccount.account!.city!
+        technic.stringValue = storeAccount.account!.technic!
+        system.stringValue = storeAccount.account!.system!
+        comunicator.stringValue = storeAccount.account!.comunicator!
+        longitude.stringValue = storeAccount.account!.longitude!
+        latitude.stringValue = storeAccount.account!.longitude!
+        selectPeriodicTest(periodicTest: storeAccount.account!.periodicTest!)
+        
+        reloadTablesViewData()
     }
     
     func accoutIsValid() -> Bool {
@@ -210,16 +231,17 @@ class AddAccountViewController: NSViewController {
         return true
     }
     
-    func clearFields() {
+    func clearWindowData() {
         let textFields = [objective,client,type,sales,contract,street,building,county,city,technic,system,comunicator,longitude,latitude]
         for textField in textFields {
             textField?.stringValue = ""
         }
+        reloadTablesViewData()
     }
 }
 
-extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, AddObservationVCDelegate {
-    
+extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, AddObservationVCDelegate, AddEmiDetailVCDelegate, AddContactVCDelegate, AddTicketVCDelegate {
+
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier == "addPartitionsSegue" {
             if let viewController = segue.destinationController as? AddPartitionVC {
@@ -246,41 +268,110 @@ extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, A
         } else if segue.identifier == "editObservationSegue" {
             if let viewController = segue.destinationController as? AddObservationVC {
                 viewController.delegate = self
+                viewController.editButtonPressed  = true
+            }
+        } else if segue.identifier == "addEmiDetailsSegue" {
+            if let viewController = segue.destinationController as? AddEmiDetailVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "editEmiDetailsSegue" {
+            if let viewController = segue.destinationController as? AddEmiDetailVC {
+                viewController.delegate = self
                 viewController.editButtonPressed = true
+            }
+        } else if segue.identifier == "addContactSegue" {
+            if let viewController = segue.destinationController as? AddContactVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "editContactSegue" {
+            if let viewController = segue.destinationController as? AddContactVC {
+                viewController.delegate = self
+                viewController.editButtonWasPressed = true
+            }
+        } else if segue.identifier == "addTicketSegue" {
+            if let viewController = segue.destinationController as? AddTicketVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "editTicketSegue" {
+            if let viewController = segue.destinationController as? AddTicketVC {
+                viewController.delegate = self
+                viewController.editButtonPresed = true
             }
         }
     }
 
     func addPartition(number: Int, name: String) {
-        storeData.storePartition(number: number, name: name)
-        partitionsTableView.reloadData()
+        storeAccount.storePartition(number: number, name: name)
+    }
+    func addZone(number: Int, name: String) {
+        storeAccount.storeZone(partitionNumber: partirionsTableViewSelectedRow, newZoneNumber: number, newZoneName: name)
+    }
+    func addObservation(observation: String) {
+        storeAccount.storeObservation(observation: observation)
+    }
+    func addEmiDetail(detail: String) {
+        storeAccount.storeEmiDetail(emiDetail: detail)
+    }
+    func addTicket(manager: String, type: String, status: String, content: String) {
+        storeAccount.storeTicket(manager: manager, type: type, status: status, content: content)
+    }
+    func addContact(priority: Int16, name: String, UserNr: Int16, postion: String, phoneNr: String, email: String, observation: String) {
+        storeAccount.storeContact(priority: priority, name: name, userNumber: UserNr, position: postion, phoneNumber: phoneNr, email: email, observations: observation)
     }
     
     func getPartition() -> PartitionEntity {
-        return storeData.getPartition(selectedPartition: partirionsTableViewSelectedRow)
+        return storeAccount.getPartition(selectedPartition: partirionsTableViewSelectedRow)
+    }
+    func getZone() -> ZoneEntity {
+        return storeAccount.getZone(selectedPartition: partirionsTableViewSelectedRow, selectedZone: zonesTableViewselectedRow)
+    }
+    func getObservation() -> ObservationsEntity {
+        return storeAccount.getObservation(selectedObservation: observationsTableViewselectedRow)
+    }
+    func getEmiDetail() -> EmiDetailesEntity {
+        return storeAccount.getEmiDetail(selectedEmiDetailIndex: emiDetailsTableViewselectedRow)
+    }
+    func getContact() -> ContactEntity {
+        return storeAccount.getContact(selectedContact: contactsTableViewSelectedRow)
+    }
+    func getTicket() -> TicketEntity {
+        return storeAccount.getTicket(selectedTicket: ticketsTableViewSelectedRow)
+    }
+    func getManagersList() -> [ManagerEntity] {
+        return storeAccount.getManagers()
     }
     
-    func addZone(number: Int, name: String) {
-        storeData.storeZone(partitionNumber: partirionsTableViewSelectedRow, newZoneNumber: number, newZoneName: name)
+    func reloadPartitionsTableView() {
+        partitionsTableView.reloadData()
+    }
+    func reloadZonesTableView() {
         zonesTableView.reloadData()
     }
-    
-    func getZone() -> ZoneEntity {
-        return storeData.getZone(selectedPartition: partirionsTableViewSelectedRow, selectedZone: zonesTableViewselectedRow)
-    }
-    
-    func addObservation(observation: String) {
-        storeData.storeObservation(observation: observation)
+    func reloadObservationsTableView() {
         observationsTableView.reloadData()
     }
-    
-    func getObservation() -> String {
-        let observations = account?.observations!.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
-        return observations[observationsTableViewselectedRow].observation!
+    func reloadEmiDetailsTableView() {
+        emiDetailsTableView.reloadData()
+    }
+    func reloadTicketsTableView() {
+        ticketsTableView.reloadData()
+    }
+    func reloadContactstableView() {
+        contactsTableView.reloadData()
     }
 }
 
 extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
+    
+    func reloadTablesViewData() {
+        scheduleTableView.reloadData()
+        partitionsTableView.reloadData()
+        zonesTableView.reloadData()
+        observationsTableView.reloadData()
+        emiDetailsTableView.reloadData()
+        ticketsTableView.reloadData()
+        contactsTableView.reloadData()
+    }
     
     func tableViewInit() {
         scheduleTableView.delegate = self
@@ -293,6 +384,10 @@ extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
         emiDetailsTableView.dataSource = self
         observationsTableView.delegate = self
         observationsTableView.dataSource = self
+        ticketsTableView.delegate = self
+        ticketsTableView.dataSource = self
+        contactsTableView.delegate = self
+        contactsTableView.dataSource = self
     }
     
     func tableViewSelectionDidChange(_ notification: Notification) {
@@ -302,7 +397,7 @@ extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
         } else if tableViewSelected == partitionsTableView {
             guard tableViewSelected.selectedRow == -1 else {
                 partirionsTableViewSelectedRow = partitionsTableView.selectedRow
-                let partitions = storeData.account!.partitions!.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+                let partitions = storeAccount.account!.partitions!.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
                 zones = partitions[partirionsTableViewSelectedRow].zones!.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity]
                 zonesTableView.reloadData()
                 return
@@ -334,26 +429,39 @@ extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
         if tableView == scheduleTableView {
             return 7
         } else if tableView == partitionsTableView {
-            return storeData.account!.partitions!.sortedArray(using: [numberSortDescriptor]).count
+            if let partitions = storeAccount.account?.partitions {
+                return partitions.count
+            } else {return 0}
         } else if tableView == zonesTableView {
-            let partitions = storeData.account!.partitions!.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
-            guard partitions.count == 0 else {
-                return partitions[partirionsTableViewSelectedRow].zones!.sortedArray(using: [numberSortDescriptor]).count
-            }
+            if let partitions = storeAccount.account?.partitions {
+                let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+                guard partitions.count == 0 else {
+                    if let zones = sortedPartitions[partirionsTableViewSelectedRow].zones {
+                        return zones.count
+                    } else {return 0}
+                }
+            } else {return 0}
         } else if tableView == contactsTableView {
-            return storeData.account!.contacts!.sortedArray(using: [priorityDescriptor]).count
+            if let contacts = storeAccount.account?.contacts {
+                return contacts.count
+            } else {return 0}
         } else if tableView == emiDetailsTableView {
-            return storeData.account!.emiDetails!.sortedArray(using: [dateSortDescriptor]).count
+            if let emiDetails = storeAccount.account?.emiDetails {
+                return emiDetails.count
+            } else {return 0}
         } else if tableView == observationsTableView {
-            return storeData.account!.observations!.sortedArray(using: [dateSortDescriptor]).count
+            if let observations = storeAccount.account?.observations {
+                return observations.count
+            } else {return 0}
         } else if tableView == ticketsTableView {
-            return storeData.account!.tickets!.sortedArray(using: [dateSortDescriptor]).count
+            if let tickets = storeAccount.account?.tickets {
+                return tickets.count
+            } else {return 0}
         }
         return 0
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        var cell = NSTableCellView()
         
         func generateCell(identifier: String, value: String) -> NSTableCellView {
             let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: identifier), owner: self) as! NSTableCellView
@@ -363,114 +471,134 @@ extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
 
         if tableView == scheduleTableView {
             let weekDays = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
-            let schedule = storeData.account!.schedeule!
-            let dayTimes = [schedule.monday, schedule.tuesday, schedule.wednesday, schedule.thursday, schedule.friday, schedule.saturday, schedule.sunday]
-            
             if tableColumn?.identifier.rawValue == "dayColumn" {
                 return generateCell(identifier: "dayCell", value: weekDays[row])
             }
-            if dayTimes[row]! != "" {
-                let startTime = dayTimes[row]!.components(separatedBy: " ")[0]
-                let endTime = dayTimes[row]!.components(separatedBy: " ")[1]
-                
-                if tableColumn?.identifier.rawValue == "openColumn" {
-                    return generateCell(identifier: "openCell", value: startTime)
-                } else if tableColumn?.identifier.rawValue == "closedColumn" {
-                    return generateCell(identifier: "closedCell", value: endTime)
+            if let schedule = storeAccount.account!.schedeule {
+                let dayTimes = [schedule.monday, schedule.tuesday, schedule.wednesday, schedule.thursday, schedule.friday, schedule.saturday, schedule.sunday]
+                if dayTimes[row]! != "" {
+                    let startTime = dayTimes[row]!.components(separatedBy: " ")[0]
+                    let endTime = dayTimes[row]!.components(separatedBy: " ")[1]
+                    
+                    if tableColumn?.identifier.rawValue == "openColumn" {
+                        return generateCell(identifier: "openCell", value: startTime)
+                    } else if tableColumn?.identifier.rawValue == "closedColumn" {
+                        return generateCell(identifier: "closedCell", value: endTime)
+                    }
                 }
             }
         } else if tableView == partitionsTableView {
-            let partitions = storeData.account!.partitions!.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
-            let partition = partitions[row]
-            if tableColumn?.identifier.rawValue == "partitionsTableNumberColumn"{
-                return generateCell(identifier: "partitionTableNumberCell", value: String(partition.number))
-            }
-            if tableColumn?.identifier.rawValue == "partitionTableNamesColumn"{
-                return generateCell(identifier: "partitionTableNameCell", value: partition.name!)
+            if let partitions = storeAccount.account!.partitions {
+                let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+                let partition = sortedPartitions[row]
+                if tableColumn?.identifier.rawValue == "partitionsTableNumberColumn"{
+                    return generateCell(identifier: "partitionTableNumberCell", value: String(partition.number))
+                }
+                if tableColumn?.identifier.rawValue == "partitionTableNamesColumn"{
+                    return generateCell(identifier: "partitionTableNameCell", value: partition.name!)
+                }
             }
         } else if tableView == zonesTableView {
-            let partitions = storeData.account!.partitions!.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
-            let selectedPartition = partitions[partirionsTableViewSelectedRow]
-            zones = selectedPartition.zones!.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity]
-            let zone = zones[row]
-            
-            if tableColumn?.identifier.rawValue == "zonesTableNumberColumn"{
-                return generateCell(identifier: "zonesTableNumberCell", value: String(zone.number))
-            }
-            if tableColumn?.identifier.rawValue == "zonesTableNamesColumn"{
-                return generateCell(identifier: "zonesTableNameCell", value: zone.name!)
+            if let partitions = storeAccount.account!.partitions {
+                let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+                let selectedPartition = sortedPartitions[partirionsTableViewSelectedRow]
+                if let selectedZones = selectedPartition.zones {
+                    zones = selectedZones.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity]
+                    let zone = zones[row]
+                    
+                    if tableColumn?.identifier.rawValue == "zonesTableNumberColumn"{
+                        return generateCell(identifier: "zonesTableNumberCell", value: String(zone.number))
+                    }
+                    if tableColumn?.identifier.rawValue == "zonesTableNamesColumn"{
+                        return generateCell(identifier: "zonesTableNameCell", value: zone.name!)
+                    }
+                }
             }
         }  else if tableView == contactsTableView {
-            let contacts = storeData.account!.contacts!.sortedArray(using: [priorityDescriptor]) as! [ContactEntity]
-            if tableColumn?.identifier.rawValue == "contactsPriorityColumn" {
-                return generateCell(identifier: "contactsPriorityCell", value: String(contacts[row].priority))
-            }
-            if tableColumn?.identifier.rawValue == "contactsUsersColumn" {
-                return generateCell(identifier: "contactsUsersCell", value: contacts[row].name!)
-            }
-            if tableColumn?.identifier.rawValue == "contactsUserNumberColumn" {
-                return generateCell(identifier: "contactsUserNumberCell", value: String(contacts[row].userNumber))
-            }
-            if tableColumn?.identifier.rawValue == "contactsPositionColumn" {
-                return generateCell(identifier: "contactsPositionCell", value: contacts[row].position!)
-            }
-            if tableColumn?.identifier.rawValue == "contactsPhoneNumberColumn" {
-                return generateCell(identifier: "contactsPhoneNumberCell", value: contacts[row].phoneNumber!)
-            }
-            if tableColumn?.identifier.rawValue == "contactsEmailColumn" {
-                return generateCell(identifier: "contactsEmailCell", value: contacts[row].email!)
-            }
-            if tableColumn?.identifier.rawValue == "contactsObservationsColumn" {
-                return generateCell(identifier: "contactsObservationsCell", value: contacts[row].observations!)
+            if let contacts = storeAccount.account!.contacts {
+                let sortedContacts = contacts.sortedArray(using: [priorityDescriptor]) as! [ContactEntity]
+                let contact = sortedContacts[row]
+                
+                if tableColumn?.identifier.rawValue == "contactsPriorityColumn" {
+                    return generateCell(identifier: "contactsPriorityCell", value: String(contact.priority))
+                }
+                if tableColumn?.identifier.rawValue == "contactsUsersColumn" {
+                    return generateCell(identifier: "contactsUsersCell", value: contact.name!)
+                }
+                if tableColumn?.identifier.rawValue == "contactsUserNumberColumn" {
+                    return generateCell(identifier: "contactsUserNumberCell", value: String(contact.userNumber))
+                }
+                if tableColumn?.identifier.rawValue == "contactsPositionColumn" {
+                    return generateCell(identifier: "contactsPositionCell", value: contact.position!)
+                }
+                if tableColumn?.identifier.rawValue == "contactsPhoneNumberColumn" {
+                    return generateCell(identifier: "contactsPhoneNumberCell", value: contact.phoneNumber!)
+                }
+                if tableColumn?.identifier.rawValue == "contactsEmailColumn" {
+                    return generateCell(identifier: "contactsEmailCell", value: contact.email!)
+                }
+                if tableColumn?.identifier.rawValue == "contactsObservationsColumn" {
+                    return generateCell(identifier: "contactsObservationsCell", value: contact.observations!)
+                }
             }
         } else if tableView == emiDetailsTableView {
-            let emiDetail = account?.emiDetails?.sortedArray(using: [dateSortDescriptor])[row] as! EmiDetailesEntity
-        
-            if tableColumn?.identifier.rawValue == "emiDetailesDateColumn"{
-                return generateCell(identifier: "emiDetailesDateCell", value: dateFormater.string(from: emiDetail.date! as Date))
-            }
-            if tableColumn?.identifier.rawValue == "emiDetailesUsersColumn"{
-                return generateCell(identifier: "emiDetailesUserCell", value: emiDetail.user!)
-            }
-            if tableColumn?.identifier.rawValue == "emiDetailesEmiDetailesColumn"{
-                return generateCell(identifier: "emiDetailesEmiDetailCell", value: emiDetail.detailes!)
+            if let emiDetails = storeAccount.account?.emiDetails {
+                let sortedEmiDetails = emiDetails.sortedArray(using: [dateSortDescriptor]) as! [EmiDetailesEntity]
+                let emiDetail = sortedEmiDetails[row]
+                
+                if tableColumn?.identifier.rawValue == "emiDetailsDatesColumn"{
+                    return generateCell(identifier: "emiDetailsDatesCell", value: dateFormater.string(from: emiDetail.date! as Date))
+                }
+                if tableColumn?.identifier.rawValue == "emiDetailsUsersColumn"{
+                    return generateCell(identifier: "emiDetailsUsersCell", value: emiDetail.user!)
+                }
+                if tableColumn?.identifier.rawValue == "emiDetailsDetailsColumn"{
+                    return generateCell(identifier: "emiDetailsDetailsCell", value: emiDetail.detailes!)
+                }
             }
         } else if tableView == observationsTableView {
-            let observations = storeData.account!.observations!.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
-            let observation = observations[row]
-        
-            if tableColumn?.identifier.rawValue == "observationsDateColumn"{
-                return generateCell(identifier: "observationsDateCell", value: dateFormater.string(from: observation.date! as Date))
-            }
-            if tableColumn?.identifier.rawValue == "observationsUserColumn"{
-                return generateCell(identifier: "observationsUserCell", value: observation.user!)
-            }
-            if tableColumn?.identifier.rawValue == "observationsObservationsColumn"{
-                return generateCell(identifier: "observationsObservationsCell", value: "aiurea")
+            if let observations = storeAccount.account!.observations {
+                let sortedObservations = observations.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
+                let observation = sortedObservations[row]
+                
+                if tableColumn?.identifier.rawValue == "observationsDatesColumn"{
+                    return generateCell(identifier: "observationsDatesCell", value: dateFormater.string(from: observation.date! as Date))
+                }
+                if tableColumn?.identifier.rawValue == "observationsUsersColumn"{
+                    return generateCell(identifier: "observationsUsersCell", value: observation.user!)
+                }
+                if tableColumn?.identifier.rawValue == "observationsObservationsColumn"{
+                    return generateCell(identifier: "observationsObservationsCell", value: observation.observation!)
+                }
             }
         } else if tableView == ticketsTableView {
-            let tickets = storeData.account!.tickets!.sortedArray(using: [dateSortDescriptor]) as! [TicketEntity]
-            
-            if tableColumn?.identifier.rawValue == "ticketsDateColumn" {
-                return generateCell(identifier: "ticketsDateCell", value: dateFormater.string(from: tickets[row].date! as Date))
-            }
-            if tableColumn?.identifier.rawValue == "ticketsUserColumn" {
-                return generateCell(identifier: "ticketsUserCell", value: tickets[row].user!)
-            }
-            if tableColumn?.identifier.rawValue == "ticketsManagerColumn" {
-                return generateCell(identifier: "ticketsManagerCell", value: tickets[row].manager!)
-            }
-            if tableColumn?.identifier.rawValue == "ticketsTypeColumn" {
-                return generateCell(identifier: "ticketsTypeCell", value: tickets[row].type!)
-            }
-            if tableColumn?.identifier.rawValue == "ticketsStatusColum" {
-                return generateCell(identifier: "ticketsStatusCell", value: tickets[row].status!)
-            }
-            if tableColumn?.identifier.rawValue == "ticketsContentColumn" {
-                return generateCell(identifier: "ticketsContentCell", value: tickets[row].content!)
+            if let tickets = storeAccount.account!.tickets {
+                let sortedTickets = tickets.sortedArray(using: [dateSortDescriptor]) as! [TicketEntity]
+                let ticket = sortedTickets[row]
+                
+                if tableColumn?.identifier.rawValue == "ticketsDateColumn" {
+                    return generateCell(identifier: "ticketsDateCell", value: dateFormater.string(from: ticket.date! as Date))
+                }
+                if tableColumn?.identifier.rawValue == "ticketsNumberColumn" {
+                    return generateCell(identifier: "ticketsNumberCell", value: String(ticket.number))
+                }
+                if tableColumn?.identifier.rawValue == "ticketsUserColumn" {
+                    return generateCell(identifier: "ticketsUserCell", value: ticket.user!)
+                }
+                if tableColumn?.identifier.rawValue == "ticketsManagerColumn" {
+                    return generateCell(identifier: "ticketsManagerCell", value: ticket.manager!)
+                }
+                if tableColumn?.identifier.rawValue == "ticketsTypeColumn" {
+                    return generateCell(identifier: "ticketsTypeCell", value: ticket.type!)
+                }
+                if tableColumn?.identifier.rawValue == "ticketsStatusColum" {
+                    return generateCell(identifier: "ticketsStatusCell", value: ticket.status!)
+                }
+                if tableColumn?.identifier.rawValue == "ticketsContentColumn" {
+                    return generateCell(identifier: "ticketsContentCell", value: ticket.content!)
+                }
             }
         }
-        return cell
+        return NSTableCellView()
     }
 }
-
