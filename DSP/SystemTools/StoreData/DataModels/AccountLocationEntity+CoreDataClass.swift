@@ -1,5 +1,5 @@
 //
-//  AccountEntity+CoreDataClass.swift
+//  AccountLocationEntity+CoreDataClass.swift
 //  DSP
 //
 //  Created by Sacuiu Dragos on 11/03/2019.
@@ -10,7 +10,7 @@
 import Foundation
 import CoreData
 
-@objc(AccountEntity)
-public class AccountEntity: NSManagedObject {
+@objc(AccountLocationEntity)
+public class AccountLocationEntity: NSManagedObject {
 
 }

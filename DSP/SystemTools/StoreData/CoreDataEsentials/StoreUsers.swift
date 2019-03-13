@@ -11,7 +11,7 @@ import CoreData
 
 class StoreUsers {
     let dspAlert = DspAlert()
-    let managedObjectContext = CoreDataManager(dataModelName: "DSP").managedObjectContext
+    let managedObjectContext = CoreDataManager(dataModelName: "DSP").backgroundContext
     
     let nameSortDescirptor = NSSortDescriptor(key: "name", ascending: true)
     
@@ -19,6 +19,7 @@ class StoreUsers {
         let newUser = NSEntityDescription.insertNewObject(forEntityName: "UserEntity", into: managedObjectContext) as! UserEntity
         newUser.name = name
         newUser.password = password
+        save()
     }
     
     func storeManager(name: String, email: String) {

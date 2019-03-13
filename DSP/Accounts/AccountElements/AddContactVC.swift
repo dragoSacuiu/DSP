@@ -55,6 +55,7 @@ class AddContactVC: NSViewController {
         } else {
             delegate?.addContact(priority: Int16(priorityTextField.stringValue)!, name: nameTextField.stringValue, UserNr: Int16(userNrTextField.stringValue)!,
                                  postion: positionTextField.stringValue, phoneNr: phoneNrTextField.stringValue, email: emailTextField.stringValue, observation: observationTextField.stringValue)
+            clearFields()
         }
         delegate?.reloadContactstableView()
     }
@@ -66,5 +67,16 @@ class AddContactVC: NSViewController {
         contact?.phoneNumber = phoneNrTextField.stringValue
         contact?.email = emailTextField.stringValue
         contact?.observations = observationTextField.stringValue
+    }
+    
+    func clearFields() {
+        self.nameTextField.stringValue = ""
+        self.priorityTextField.stringValue = ""
+        self.userNrTextField.stringValue = ""
+        self.positionTextField.stringValue = ""
+        self.phoneNrTextField.stringValue = ""
+        self.emailTextField.stringValue = ""
+        self.observationTextField.stringValue = ""
+        self.priorityTextField.becomeFirstResponder()
     }
 }

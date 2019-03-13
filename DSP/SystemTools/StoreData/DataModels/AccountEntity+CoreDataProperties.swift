@@ -2,7 +2,7 @@
 //  AccountEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 02/03/2019.
+//  Created by Sacuiu Dragos on 11/03/2019.
 //  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
@@ -17,16 +17,11 @@ extension AccountEntity {
         return NSFetchRequest<AccountEntity>(entityName: "AccountEntity")
     }
 
-    @NSManaged public var adress1: String?
-    @NSManaged public var adress2: String?
-    @NSManaged public var city: String?
+    @NSManaged public var active: Bool
     @NSManaged public var client: String?
     @NSManaged public var comunicator: String?
     @NSManaged public var contract: String?
-    @NSManaged public var county: String?
     @NSManaged public var id: String?
-    @NSManaged public var latitude: String?
-    @NSManaged public var longitude: String?
     @NSManaged public var objective: String?
     @NSManaged public var periodicTest: String?
     @NSManaged public var sales: String?
@@ -42,6 +37,7 @@ extension AccountEntity {
     @NSManaged public var partitions: NSSet?
     @NSManaged public var schedeule: ScheduleEntity?
     @NSManaged public var tickets: NSSet?
+    @NSManaged public var location: AccountLocationEntity?
 
 }
 

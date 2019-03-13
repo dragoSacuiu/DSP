@@ -10,9 +10,9 @@ import Foundation
 import CoreData
 import Cocoa
 
-class StoreAccount {
+class UserStoreData {
     let dspAlert = DspAlert()
-    let managedObjectContext = CoreDataManager(dataModelName: "DSP").managedObjectContext
+    let managedObjectContext = CoreDataManager(dataModelName: "DSP").backgroundContext
     
     let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: true)
     let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
@@ -28,39 +28,19 @@ class StoreAccount {
     func getExistingAccount(accountID: String) {
         if let searchedAccount = getAccount(accountId: accountID) {
             account = searchedAccount
-        } else {
-            account = nil
-        }
+        } else { account = nil }
     }
     
 ///////////////////////////////////////////////////////////////////// ADD OBJECTS /////////////////////////////////////////////////////////////////////////////////////////
-    
-    func addUndefinedAccountToBlackList(accountID: String) {
-        let newUndefinedAccount = NSEntityDescription.insertNewObject(forEntityName: "BlackListEntity", into: managedObjectContext) as? BlackListEntity
-        newUndefinedAccount?.accountID = accountID
-        saveContext()
-    }
-    
-    func storeAccountEvents(accoutsEvents: [AccountEvents]) {
-        for accountEvents in accoutsEvents {
-            let fetchAccount = getAccount(accountId: accountEvents.id)
-            guard fetchAccount == nil else {
-                if fetchAccount!.id == accountEvents.id {
-                    for event in accountEvents.events {
-                        let eventEntity = EventEntity(context: managedObjectContext)
-                        eventEntity.date = event.date
-                        eventEntity.eventName = event.name
-                        eventEntity.cid = event.cid
-                        eventEntity.group = Int16(event.group)
-                        eventEntity.partition = Int16(event.partition)
-                        eventEntity.zoneOrUser = Int16(event.zoneOrUser)
-                        eventEntity.priority = Int16(event.priority)
-                        fetchAccount!.addToEvents(eventEntity)
-                    }
-                }
-                return
-            }
-        }
+    func storeLocation(county: String, city: String, adress1: String, adress2: String, longitude: Double, latitude: Double) {
+        let location = NSEntityDescription.insertNewObject(forEntityName: "AccountLocationEntity", into: managedObjectContext) as! AccountLocationEntity
+        location.county = county
+        location.city = city
+        location.adress1 = adress1
+        location.adress2 = adress2
+        location.longitude = longitude
+        location.latitude = latitude
+        account!.location = location
     }
     
     func createNewSchedule() {
@@ -168,25 +148,12 @@ class StoreAccount {
         newTicket.manager = manager
         newTicket.status = status
         newTicket.type = type
-        newTicket.content = content
+        newTicket.details = content
         account!.addToTickets(newTicket)
     }
 }
 /////////////////////////////////////////////////////////////////////////// GET OBJECTS ////////////////////////////////////////////////////////////////////////////////////
-extension StoreAccount {
-    func getBlackList() -> [String] {
-        var stringBlackList = [String]()
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "BlackListEntity")
-        do {
-            let blackList = try managedObjectContext.fetch(fetchRequest) as! [BlackListEntity]
-            for undefinedAccount in blackList {
-                stringBlackList.append(undefinedAccount.accountID!)
-            }
-        } catch {
-            dspAlert.showAlert(message: "Can't get BlackList")
-        }
-        return stringBlackList
-    }
+extension UserStoreData {
     
     func getUsers() -> [UserEntity] {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "UserEntity")
@@ -211,35 +178,29 @@ extension StoreAccount {
     }
     
     func getAccount(accountId: String) -> AccountEntity? {
-        var foundAccount = false
-        let fetchDescription = NSFetchRequest<NSFetchRequestResult>(entityName: "AccountEntity")
+        let fetchRequest: NSFetchRequest<AccountEntity> = AccountEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", accountId)
         do {
-            let fetchResult = try managedObjectContext.fetch(fetchDescription) as! [AccountEntity]
-            for accountEntity in fetchResult {
-                if accountEntity.id == accountId {
-                    foundAccount = true
-                    return accountEntity
+            let fetchResult = try managedObjectContext.fetch(fetchRequest)
+            if fetchResult.count <= 1 {
+                if fetchResult.count == 1 {
+                    return fetchResult[0]
+                } else if fetchResult.count == 0 {
+                    dspAlert.showAlert(message: "AcoountID: \(accountId) dose not exists in database.")
                 }
+            } else {
+                dspAlert.showAlert(message: "Multiple account IDs: \(accountId) ware found in database.")
             }
         } catch  {
             print("Cant get accounts")
         }
-        guard foundAccount else {
-            let blackList = getBlackList()
-            if blackList.contains(accountId) {
-                dspAlert.showAlert(message: "Account ID is in BlackList as undefined!")
-            } else {
-                dspAlert.showAlert(message: "Account dose not exists in database")
-            }
-            return nil
-        }
+        return nil
     }
     
     func getTicketNumber() -> Int64 {
         let fetchDescription = NSFetchRequest<NSFetchRequestResult>(entityName: "TicketNumberEntity")
         do {
             let fetchResult = try managedObjectContext.fetch(fetchDescription) as! [TicketNumberEntity]
-            print(fetchResult.count)
             if fetchResult.count == 0 {
                 let firstTicketNumber = NSEntityDescription.insertNewObject(forEntityName: "TicketNumberEntity", into: managedObjectContext) as! TicketNumberEntity
                 firstTicketNumber.number = 1000000
@@ -302,7 +263,8 @@ extension StoreAccount {
 }
 
 /////////////////////////////////////////////////////////// REMOVE OBJECT ////////////////////////////////////////////////////////////////////////////////////////////////
-extension StoreAccount {
+extension UserStoreData {
+    
     func removeObservation(selectedObservationIndex: Int) {
         account?.removeFromObservations(getObservation(selectedObservation: selectedObservationIndex))
     }
@@ -315,10 +277,11 @@ extension StoreAccount {
     func removeContact(selectedContact: Int) {
         account?.removeFromContacts(getContact(selectedContact: selectedContact))
     }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-extension StoreAccount {
+extension UserStoreData {
 
     func saveContext() {
         do {

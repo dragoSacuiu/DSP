@@ -2,8 +2,8 @@
 //  EmiEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 04/12/2018.
-//  Copyright © 2018 Sacuiu Dragos. All rights reserved.
+//  Created by Sacuiu Dragos on 12/03/2019.
+//  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
 
@@ -19,5 +19,9 @@ extension EmiEntity {
 
     @NSManaged public var id: String?
     @NSManaged public var phone: String?
+    @NSManaged public var longitude: Double
+    @NSManaged public var latitude: Double
+    @NSManaged public var active: Bool
+    @NSManaged public var statusDetails: String?
 
 }

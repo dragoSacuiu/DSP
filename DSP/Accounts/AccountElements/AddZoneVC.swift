@@ -51,5 +51,6 @@ class AddZoneVC: NSViewController {
     func clearFields() {
         zoneNameTextField.stringValue = ""
         zoneNumberTextField.stringValue = ""
+        zoneNameTextField.becomeFirstResponder()
     }
 }

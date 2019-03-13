@@ -9,6 +9,16 @@
 import Foundation
 import Cocoa
 
+protocol EventProtocol {
+    var priority: Int { get }
+    var date: NSDate { get }
+    var cid: String { get }
+    var name: String { get }
+    var partition: Int { get }
+    var zoneOrUser: Int { get }
+    var group: Int { get }
+}
+
 struct Event: EventProtocol {
     let priority: Int
     let date: NSDate

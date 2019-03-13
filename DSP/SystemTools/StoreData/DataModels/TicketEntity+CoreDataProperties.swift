@@ -2,7 +2,7 @@
 //  TicketEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 04/03/2019.
+//  Created by Sacuiu Dragos on 10/03/2019.
 //  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
@@ -17,7 +17,7 @@ extension TicketEntity {
         return NSFetchRequest<TicketEntity>(entityName: "TicketEntity")
     }
 
-    @NSManaged public var content: String?
+    @NSManaged public var details: String?
     @NSManaged public var date: NSDate?
     @NSManaged public var manager: String?
     @NSManaged public var number: Int64

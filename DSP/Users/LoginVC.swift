@@ -15,7 +15,7 @@ protocol LoginVCDelegate {
 
 class LoginVC: NSViewController {
     
-    var delegate: AlarmsViewController?
+    var delegate: DSPViewController?
     let usersManager = UsersManager()
     let dspAlert = DspAlert()
     

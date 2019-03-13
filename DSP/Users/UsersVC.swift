@@ -48,6 +48,7 @@ extension UsersVC: AddUserVCDelegate, AddManagerVCDelegate {
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier == "addUserSegue" {
             if let viewController = segue.destinationController as? AddUserVC {
+                print("user")
                 viewController.delegate = self
             }
         } else if segue.identifier == "editUserSegue" {
@@ -71,12 +72,13 @@ extension UsersVC: AddUserVCDelegate, AddManagerVCDelegate {
         storeData.storeUser(name: name, password: password)
         usersTableView.reloadData()
     }
+    func getUser() -> UserEntity {
+        return storeData.getUser(selectedUserIndex: usersTableViewSelectedRow)
+    }
+    
     func addManager(name: String, email: String) {
         storeData.storeManager(name: name, email: email)
         managersTableView.reloadData()
-    }
-    func getUser() -> UserEntity {
-        return storeData.getUser(selectedUserIndex: usersTableViewSelectedRow)
     }
     func getManager() -> ManagerEntity {
         return storeData.getManager(selectedManagerIndex: managersTableViewSelectedRow)

@@ -8,11 +8,15 @@
 
 import Foundation
 
+protocol IprsReciverDelegate {
+    var blackList: [String] {get set}
+}
+
 class Iprs: ReciverProtocol {
+    var delegate: IprsReciverDelegate?
     
     var iprsCSVLogFilesPath = "/Volumes/home/iprs/201903"
     var textFilesTools = FilesTools()
-    var blackList = [String]()
     
     let medicalAlarmCID    = (firstCode: 100, lastCode: 109, priority: 1)
     let fireAlarmCID       = (firstCode: 110, lastCode: 119, priority: 2)
@@ -32,23 +36,18 @@ class Iprs: ReciverProtocol {
     let scheduleCID        = (firstCode: 630, lastCode: 632, priority: 16)
     let miscelaneousCID    = (firstCode: 654, lastCode: 962, priority: 17)
     
-    func getEvents() -> [AccountEvents] {
-        var events = [AccountEvents]()
-        events.append(contentsOf: createEventsFromIPRSLogFiles())
-        return events
-    }
 }
 
 extension Iprs {
     
-    func createEventsFromIPRSLogFiles() -> [AccountEvents] {
+    func getEvents() -> [AccountEvents] {
         var accountEvents = [AccountEvents]()
-        let filesText = textFilesTools.getTextFromFile(from: iprsCSVLogFilesPath, fileType: "csv")
-        if filesText.count > 0 {
-            for file in filesText {
+        let textFiles = textFilesTools.getTextFromFile(from: iprsCSVLogFilesPath, fileType: "csv")
+        if textFiles.count > 0 {
+            for file in textFiles {
                 let fileName = file.FileName
                 let accountID = textFilesTools.cutFromTextLine(TextLine: fileName, From: 8, To: 12)
-                if !blackList.contains(accountID) {
+                if !delegate!.blackList.contains(accountID) {
                     let account = AccountEvents(id: accountID)
                     let textLines = file.Content.components(separatedBy: "\n")
                     for textLine in textLines {

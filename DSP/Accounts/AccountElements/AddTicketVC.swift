@@ -39,7 +39,7 @@ class AddTicketVC: NSViewController {
         if editButtonPresed {
             ticket = delegate!.getTicket()
             addTcicketButtonOutlet.title = "SAVE"
-            ticketTextField.stringValue = ticket!.content!
+            ticketTextField.stringValue = ticket!.details!
             for manager in managers! {
                 if manager.name! == ticket!.manager! {
                     selectManagerPopUpButton.title = manager.name!
@@ -61,7 +61,7 @@ class AddTicketVC: NSViewController {
         if editButtonPresed {
             ticket?.manager = selectManagerPopUpButton.titleOfSelectedItem
             ticket?.type = selectTypePopUpButton.titleOfSelectedItem
-            ticket?.content = ticketTextField.stringValue
+            ticket?.details = ticketTextField.stringValue
         } else {
             delegate?.addTicket(manager: selectManagerPopUpButton.titleOfSelectedItem!, type: selectTypePopUpButton.titleOfSelectedItem!,
                                 status: "OPEN", content: ticketTextField.stringValue)

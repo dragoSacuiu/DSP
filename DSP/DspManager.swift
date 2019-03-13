@@ -9,17 +9,17 @@
 import Foundation
 import Cocoa
 
-protocol EventsManagerVCDelegate: class {
+protocol DspVCDelegate: class {
     func reloadTableViewData()
-    func generateAlert(for accountAvents: AccountEvents)
+    func generateAlert()
 }
 
-class EventsManager {
-   
-    var delegate: EventsManagerVCDelegate?
+class DspManager: AddAcccountVCDelegate {
+    
+    var dspVCDelegate: DspVCDelegate?
     
     var reciversManager = ReciversManager()
-    var storeData = StoreAccount()
+    var storeData = DspStoreData()
     
     var runDispatchTimer: Timer?
     
@@ -44,9 +44,8 @@ class EventsManager {
     let openCloseImage = NSImage(named: "OpenCloseImage")!
     let unknownImage = NSImage(named: "UnknownImage")!
     
-    
-    
     func run(getEventsTimeInterval: Double) {
+        reciversManager.blackList = storeData.getBlackList()
         runDispatchTimer = Timer.scheduledTimer(timeInterval: getEventsTimeInterval , target: self, selector: #selector(getEvents), userInfo: nil, repeats: true)
     }
     func stop() {
@@ -57,65 +56,79 @@ class EventsManager {
     }
     
     @objc func getEvents() {
-        //deleteLowPriorityEvents()
-        let events = reciversManager.getEventsFromRecivers()
-        if events.count > 0 {
-            filterEvents(events: events)
+        ///deleteLowPriorityEvents()
+        let newAccountsEvents = reciversManager.getEventsFromRecivers()
+        if newAccountsEvents.count > 0 {
+            for newAccount in newAccountsEvents {
+                if let accountEvents = filterEvents(newAccount: newAccount) {
+                    accountsEvents.append(accountEvents)
+                }
+            }
+            dspVCDelegate?.generateAlert()
         }
-        delegate?.reloadTableViewData()
     }
     
-    func filterEvents(events: [AccountEvents]) {
-        let newAccountEvents = events
+    func filterEvents(newAccount: AccountEvents) -> AccountEvents? {
+        var matchAccount = false
         if accountsEvents.count == 0 {
-            for account in newAccountEvents {
-                if let accountModel = storeData.getAccount(accountId: account.id) {
-                    account.priorityEvent = getPriorityEvent(events: account.events)
-                    account.priorityEventType = getEventType(event: account.priorityEvent!)
-                    account.accountDetailes = accountModel
-                    accountsEvents.append(account)
-                } else {
-                    reciversManager.iprsReciver.blackList.append(account.id)
-                    storeData.addUndefinedAccountToBlackList(accountID: account.id)
-                }
+            if let accountModel = storeData.getAccount(accountId: newAccount.id) {
+                newAccount.priorityEvent = getPriorityEvent(events: newAccount.events)
+                newAccount.priorityEventType = getEventType(event: newAccount.priorityEvent!)
+                newAccount.accountDetailes = accountModel
+                return newAccount
+            } else {
+                reciversManager.blackList.append(newAccount.id)
+                storeData.addUndefinedAccountToBlackList(accountID: newAccount.id)
             }
         } else {
-            for accountIndex in 0..<accountsEvents.count {
-                var matchAccount = false
-                let account = accountsEvents[accountIndex]
-                for newAccount in newAccountEvents {
-                    if account.id == newAccount.id {
-                        let newAccountPriorityEvent = getPriorityEvent(events: newAccount.events)
-                        if newAccountPriorityEvent.priority < account.priorityEvent!.priority {
-                            let newAccountEventType = getEventType(event: newAccountPriorityEvent)
-                            account.priorityEvent = newAccountPriorityEvent
-                            account.priorityEventType = newAccountEventType
-                        }
-                        accountsEvents[accountIndex].events.append(contentsOf: newAccount.events)
-                        matchAccount = true
-                        break
+            for account in accountsEvents{
+                if account.id == newAccount.id {
+                    let accountNewPriorityEvent = getPriorityEvent(events: newAccount.events)
+                    if accountNewPriorityEvent.priority < account.priorityEvent!.priority {
+                        let newAccountEventType = getEventType(event: accountNewPriorityEvent)
+                        account.priorityEvent = accountNewPriorityEvent
+                        account.priorityEventType = newAccountEventType
                     }
-                    if !matchAccount {
-                        if let accountModel = storeData.getAccount(accountId: newAccount.id) {
-                            newAccount.priorityEvent = getPriorityEvent(events: newAccount.events)
-                            newAccount.priorityEventType = getEventType(event: newAccount.priorityEvent!)
-                            newAccount.accountDetailes = accountModel
-                            accountsEvents.append(newAccount)
-                        } else {
-                            reciversManager.iprsReciver.blackList.append(account.id)
-                            storeData.addUndefinedAccountToBlackList(accountID: account.id)
-                        }
-                    }
+                    account.events.append(contentsOf: newAccount.events)
+                    matchAccount = true
+                    break
+                }
+            }
+            if !matchAccount {
+                if let accountModel = storeData.getAccount(accountId: newAccount.id) {
+                    newAccount.priorityEvent = getPriorityEvent(events: newAccount.events)
+                    newAccount.priorityEventType = getEventType(event: newAccount.priorityEvent!)
+                    newAccount.accountDetailes = accountModel
+                    return newAccount
+                } else {
+                    reciversManager.blackList.append(newAccount.id)
+                    storeData.addUndefinedAccountToBlackList(accountID: newAccount.id)
                 }
             }
         }
+        return nil
+    }
+    
+    func removeAlarm(selectedAccountIndex: Int) {
+        accountsEvents.remove(at: selectedAccountIndex)
+    }
+    func reloadTableViewsData() {
+        dspVCDelegate?.reloadTableViewData()
     }
     
 }
 
-
-extension EventsManager {
+extension DspManager {
     
+    func addToBlackList(accountID: String) {
+        reciversManager.blackList.append(accountID)
+    }
+    
+    func removeFromBlackList(accountID: String) {
+        storeData.removeAccountIDFromBlackList(accountID: accountID)
+        reciversManager.removeFromBlackList(accountID: accountID)
+    }
+
     func deleteLowPriorityEvents() {
         if accountsEvents.count > 0 {
             for accountIndex in 0..<accountsEvents.count {

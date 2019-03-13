@@ -52,5 +52,6 @@ class AddPartitionVC: NSViewController {
     func clearFields() {
         partitionNameTextField.stringValue = ""
         partitionNumberTextField.stringValue = ""
+        partitionNameTextField.becomeFirstResponder()
     }
 }

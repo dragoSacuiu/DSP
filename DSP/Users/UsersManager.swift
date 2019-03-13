@@ -15,7 +15,7 @@ class UsersManager {
     static var activeUser = String()
     
     func addDefaultUser() {
-        storeUsers.storeUser(name: "dsp", password: "12345")
+        storeUsers.storeUser(name: "DSP", password: "12345")
     }
     
     func userIsValid(name: String, password: String) -> Bool {

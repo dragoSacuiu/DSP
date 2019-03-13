@@ -8,13 +8,25 @@
 
 import Cocoa
 
+protocol AddAcccountVCDelegate {
+    func addToBlackList(accountID: String)
+    func removeFromBlackList(accountID: String)
+    func reloadTableViewsData()
+}
+
 class AddAccountViewController: NSViewController {
     
-    let storeAccount = StoreAccount()
+    var delegate: AddAcccountVCDelegate?
+    
+    var mazga = false
+    
+    let storeAccount = UserStoreData()
     let dateFormater = DateFormatter()
     let dspAlert = DspAlert()
     
     var zones = [ZoneEntity]()
+    var longitude = Double()
+    var latitude = Double()
     
     let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
     let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: true)
@@ -27,21 +39,21 @@ class AddAccountViewController: NSViewController {
     var observationsTableViewselectedRow = 0
     var ticketsTableViewSelectedRow = 0
 
-    @IBOutlet weak var accountId: NSTextField!
-    @IBOutlet weak var objective: NSTextField!
-    @IBOutlet weak var client: NSTextField!
-    @IBOutlet weak var type: NSTextField!
-    @IBOutlet weak var sales: NSTextField!
-    @IBOutlet weak var contract: NSTextField!
-    @IBOutlet weak var street: NSTextField!
-    @IBOutlet weak var building: NSTextField!
-    @IBOutlet weak var county: NSTextField!
-    @IBOutlet weak var city: NSTextField!
-    @IBOutlet weak var technic: NSTextField!
-    @IBOutlet weak var system: NSTextField!
-    @IBOutlet weak var comunicator: NSTextField!
-    @IBOutlet weak var longitude: NSTextField!
-    @IBOutlet weak var latitude: NSTextField!
+    @IBOutlet weak var accountIdTextField: NSTextField!
+    @IBOutlet weak var objectiveTextField: NSTextField!
+    @IBOutlet weak var clientTextField: NSTextField!
+    @IBOutlet weak var objectiveTypeTextField: NSTextField!
+    @IBOutlet weak var salesTextField: NSTextField!
+    @IBOutlet weak var contractTextField: NSTextField!
+    @IBOutlet weak var adress1TextField: NSTextField!
+    @IBOutlet weak var adress2TextField: NSTextField!
+    @IBOutlet weak var countyTextField: NSTextField!
+    @IBOutlet weak var cityTextField: NSTextField!
+    @IBOutlet weak var technicTextField: NSTextField!
+    @IBOutlet weak var systemTextField: NSTextField!
+    @IBOutlet weak var comunicatorTextField: NSTextField!
+    @IBOutlet weak var longitudeTextField: NSTextField!
+    @IBOutlet weak var latitudeTextField: NSTextField!
     
     @IBOutlet weak var daySelector: NSPopUpButton!
     @IBOutlet weak var startTimePicker: NSDatePicker!
@@ -60,6 +72,10 @@ class AddAccountViewController: NSViewController {
     @IBOutlet weak var observationsTableView: NSTableView!
     @IBOutlet weak var ticketsTableView: NSTableView!
     
+    lazy var textFields: [NSTextField] = {
+        return [objectiveTextField,clientTextField,objectiveTypeTextField,salesTextField,contractTextField,adress1TextField,adress2TextField,
+                countyTextField,cityTextField,technicTextField,systemTextField,comunicatorTextField,longitudeTextField,latitudeTextField]
+    }()
     
     @IBAction func periodicTestChanged(_ sender: AnyObject) {
         
@@ -78,24 +94,25 @@ class AddAccountViewController: NSViewController {
         super.viewDidLoad()
         storeAccount.createNewAccount()
         tableViewInit()
-        
         dateFormater.timeStyle = .short
         dateFormater.dateStyle = .short
+        
+        longitudeTextField.isEditable = false
+        latitudeTextField.isEditable = false
     }
     
     override func viewDidDisappear() {
         storeAccount.managedObjectContext.reset()
     }
-    
+    //
     func createAccount() {
-        let periodicTest = getPeriodicTest()
-        if accoutIsValid() && allFieldsAreFill() && periodicTest != nil {
-            storeAccount.account!.id = accountId.stringValue; storeAccount.account!.objective = objective.stringValue; storeAccount.account!.client = client.stringValue;
-            storeAccount.account!.type = type.stringValue; storeAccount.account!.sales = sales.stringValue; storeAccount.account!.contract = contract.stringValue;
-            storeAccount.account!.adress1 = street.stringValue; storeAccount.account!.adress2 = building.stringValue; storeAccount.account!.county = county.stringValue;
-            storeAccount.account!.city = city.stringValue; storeAccount.account!.technic = technic.stringValue; storeAccount.account!.system = system.stringValue;
-            storeAccount.account!.comunicator = comunicator.stringValue; storeAccount.account!.longitude = longitude.stringValue; storeAccount.account!.latitude = latitude.stringValue;
+        if accoutIsValid && allFieldsAreFill && periodicTest != nil {
+            storeAccount.account!.id = accountIdTextField.stringValue; storeAccount.account!.objective = objectiveTextField.stringValue; storeAccount.account!.client = clientTextField.stringValue;
+            storeAccount.account!.type = objectiveTypeTextField.stringValue; storeAccount.account!.sales = salesTextField.stringValue; storeAccount.account!.contract = contractTextField.stringValue;
+            storeAccount.account!.technic = technicTextField.stringValue; storeAccount.account!.system = systemTextField.stringValue; storeAccount.account!.comunicator = comunicatorTextField.stringValue;
             storeAccount.account!.periodicTest = periodicTest
+            storeAccount.storeLocation(county: countyTextField.stringValue, city: cityTextField.stringValue, adress1: adress1TextField.stringValue, adress2: adress2TextField.stringValue, longitude: longitude, latitude: latitude)
+            delegate?.removeFromBlackList(accountID: accountIdTextField.stringValue)
             storeAccount.saveContext()
         }
     }
@@ -105,12 +122,12 @@ class AddAccountViewController: NSViewController {
     }
     
     @IBAction func searchButton(_ sender: NSButton) {
-        if accoutIsValid() {
-            storeAccount.getExistingAccount(accountID: accountId.stringValue)
+        if accoutIsValid {
+            storeAccount.createNewAccount()
+            clearWindowData()
+            storeAccount.getExistingAccount(accountID: accountIdTextField.stringValue)
             if storeAccount.account != nil {
                 displayAccount()
-            } else {
-                storeAccount.createNewAccount()
             }
         }
     }
@@ -119,14 +136,22 @@ class AddAccountViewController: NSViewController {
         storeAccount.deleteAccount()
         storeAccount.saveContext()
         clearWindowData()
+        storeAccount.createNewAccount()
     }
     
     @IBAction func copyAccountButton(_ sender: NSButton) {
-        
     }
     
     @IBAction func pasteAccountButton(_ sender: NSButton) {
 
+    }
+
+    @IBAction func addScheduleButton(_ sender: NSButton) {
+        let daySelected = daySelector.titleOfSelectedItem!
+        let startTime = dateFormater.string(from: startTimePicker.dateValue).components(separatedBy: " ")[1]
+        let endTime = dateFormater.string(from: endTimePicker.dateValue).components(separatedBy: " ")[1]
+        storeAccount.storeSchedule(day: daySelected, startTime: startTime, endTime: endTime)
+        scheduleTableView.reloadData()
     }
     
     @IBAction func removeObservationButton(_ sender: NSButton) {
@@ -138,15 +163,14 @@ class AddAccountViewController: NSViewController {
         emiDetailsTableView.reloadData()
     }
     
-    @IBAction func addScheduleButton(_ sender: NSButton) {
-        let daySelected = daySelector.titleOfSelectedItem!
-        let startTime = dateFormater.string(from: startTimePicker.dateValue).components(separatedBy: " ")[1]
-        let endTime = dateFormater.string(from: endTimePicker.dateValue).components(separatedBy: " ")[1]
-        storeAccount.storeSchedule(day: daySelected, startTime: startTime, endTime: endTime)
-        scheduleTableView.reloadData()
+    @IBAction func closeTicketButton(_ sender: NSButton) {
+        let tickets = storeAccount.account?.tickets?.sortedArray(using: [dateSortDescriptor]) as? [TicketEntity]
+        tickets![ticketsTableViewSelectedRow].status = "CLOSE"
+        ticketsTableView.reloadData()
     }
     
-    func getPeriodicTest() -> String? {
+    
+    lazy var periodicTest: String? = {
         let periodicTestOutlets = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
         var selectedPeriodicTestValue: NSButton?
         for periodicTestOutlet in periodicTestOutlets {
@@ -168,7 +192,7 @@ class AddAccountViewController: NSViewController {
             dspAlert.showAlert(message: "No periodic test selected!")
             return nil
         }
-    }
+    }()
     
     func selectPeriodicTest(periodicTest: String) {
         let periodicTestOutlets = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
@@ -180,67 +204,78 @@ class AddAccountViewController: NSViewController {
     }
     
     func displayAccount() {
-        objective.stringValue = storeAccount.account!.objective!
-        client.stringValue = storeAccount.account!.client!
-        type.stringValue = storeAccount.account!.type!
-        sales.stringValue = storeAccount.account!.sales!
-        contract.stringValue = storeAccount.account!.contract!
-        street.stringValue = storeAccount.account!.adress1!
-        building.stringValue = storeAccount.account!.adress2!
-        county.stringValue = storeAccount.account!.county!
-        city.stringValue = storeAccount.account!.city!
-        technic.stringValue = storeAccount.account!.technic!
-        system.stringValue = storeAccount.account!.system!
-        comunicator.stringValue = storeAccount.account!.comunicator!
-        longitude.stringValue = storeAccount.account!.longitude!
-        latitude.stringValue = storeAccount.account!.longitude!
+        if let location = storeAccount.account!.location {
+            longitude = location.longitude
+            latitude = location.latitude
+        }
+        
+        objectiveTextField.stringValue = storeAccount.account!.objective!
+        clientTextField.stringValue = storeAccount.account!.client!
+        objectiveTypeTextField.stringValue = storeAccount.account!.type!
+        salesTextField.stringValue = storeAccount.account!.sales!
+        contractTextField.stringValue = storeAccount.account!.contract!
+        adress1TextField.stringValue = storeAccount.account!.location!.adress1!
+        adress2TextField.stringValue = storeAccount.account!.location!.adress2!
+        countyTextField.stringValue = storeAccount.account!.location!.county!
+        cityTextField.stringValue = storeAccount.account!.location!.city!
+        technicTextField.stringValue = storeAccount.account!.technic!
+        systemTextField.stringValue = storeAccount.account!.system!
+        comunicatorTextField.stringValue = storeAccount.account!.comunicator!
+        longitudeTextField.stringValue = String(longitude)
+        latitudeTextField.stringValue = String(latitude)
         selectPeriodicTest(periodicTest: storeAccount.account!.periodicTest!)
         
         reloadTablesViewData()
     }
     
-    func accoutIsValid() -> Bool {
-        guard accountIdIsValid() else {
-            guard allFieldsAreFill() else {
+    lazy var accoutIsValid: Bool = {
+        guard accountIdIsValid else {
+            guard allFieldsAreFill else {
                 return false
             }
             return false
         }
         return true
-    }
+    }()
     
-    func accountIdIsValid() -> Bool {
+    lazy var accountIdIsValid: Bool = {
         let validIdCharacters = "0123456789ABCDEF"
-        for char in accountId.stringValue {
-            guard validIdCharacters.contains(char) && accountId.stringValue.count == 4 else {
-                dspAlert.showAlert(message: "Invalid Account ID: \(accountId.stringValue) \nID must contain 4 of these characters: \(validIdCharacters)")
+        for char in accountIdTextField.stringValue {
+            guard validIdCharacters.contains(char) && accountIdTextField.stringValue.count == 4 else {
+                dspAlert.showAlert(message: "Invalid Account ID: \(accountIdTextField.stringValue) \nID must contain 4 of these characters: \(validIdCharacters)")
                 return false
             }
         }
         return true
-    }
+    }()
     
-    func allFieldsAreFill() -> Bool {
-        let textFields = [objective,client,type,sales,contract,street,building,county,city,technic,system,comunicator,longitude,latitude]
+    lazy var allFieldsAreFill: Bool = {
         for textField in textFields {
-            guard textField?.stringValue != "" else {
+            guard textField.stringValue != "" else {
                 dspAlert.showAlert(message: "Please fill all fields!")
                 return false
             }
         }
         return true
-    }
+    }()
     
     func clearWindowData() {
-        let textFields = [objective,client,type,sales,contract,street,building,county,city,technic,system,comunicator,longitude,latitude]
         for textField in textFields {
-            textField?.stringValue = ""
+            textField.stringValue = ""
+        }
+        let periodicTestOutlets = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
+        for periodicTestOutlet in periodicTestOutlets {
+            if periodicTestOutlet!.state == .on {
+                periodicTestOutlet?.state = .off
+                break
+            }
         }
         reloadTablesViewData()
     }
 }
 
-extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, AddObservationVCDelegate, AddEmiDetailVCDelegate, AddContactVCDelegate, AddTicketVCDelegate {
+extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, AddObservationVCDelegate, AddEmiDetailVCDelegate,
+AddAccountLocationVCDelegate, AddContactVCDelegate, AddTicketVCDelegate {
 
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier == "addPartitionsSegue" {
@@ -296,6 +331,10 @@ extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, A
             if let viewController = segue.destinationController as? AddTicketVC {
                 viewController.delegate = self
                 viewController.editButtonPresed = true
+            }
+        } else if segue.identifier == "addAccountLocationSegue" {
+            if let viewController = segue.destinationController as? AddAccountLocationVC {
+                viewController.delegate = self
             }
         }
     }
@@ -358,6 +397,13 @@ extension AddAccountViewController: AddPartitionVCDelegate, AddZoneVCDelegate, A
     }
     func reloadContactstableView() {
         contactsTableView.reloadData()
+    }
+    
+    func addLocation(longitude: Double, latitude: Double) {
+        self.longitude = longitude
+        self.latitude = latitude
+        self.longitudeTextField.stringValue = String(longitude)
+        self.latitudeTextField.stringValue = String(latitude)
     }
 }
 
@@ -595,7 +641,7 @@ extension AddAccountViewController: NSTableViewDataSource, NSTableViewDelegate {
                     return generateCell(identifier: "ticketsStatusCell", value: ticket.status!)
                 }
                 if tableColumn?.identifier.rawValue == "ticketsContentColumn" {
-                    return generateCell(identifier: "ticketsContentCell", value: ticket.content!)
+                    return generateCell(identifier: "ticketsContentCell", value: ticket.details!)
                 }
             }
         }
