@@ -9,19 +9,18 @@
 import Foundation
 
 class UsersManager {
-    
+    let dspAlert = DspAlert()
     let storeUsers = StoreUsers()
-    
     static var activeUser = String()
-    
-    func addDefaultUser() {
-        storeUsers.storeUser(name: "DSP", password: "12345")
-    }
     
     func userIsValid(name: String, password: String) -> Bool {
         let users = storeUsers.getUsers()
+        guard users.count != 0 else {
+            dspAlert.showAlert(message: "No user is created. Please create at least one user.")
+            return true }
         for user in users {
-            guard user.name != name || user.password != password else {
+            if user.name == name && user.password == password {
+                UsersManager.activeUser = user.name!
                 return true
             }
         }

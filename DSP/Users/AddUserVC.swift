@@ -20,8 +20,8 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
     @IBOutlet weak var addButtonOutlet: NSButton!
     
     @IBOutlet weak var nameTextField: NSTextField!
-    @IBOutlet weak var passwordTextField: NSTextField!
-    @IBOutlet weak var confirmPasswordTextField: NSTextField!
+    @IBOutlet weak var passwordTextField: NSSecureTextField!
+    @IBOutlet weak var confirmPasswordTextField: NSSecureTextField!
     
     var user: UserEntity?
     var editButtonPressed = false
@@ -56,9 +56,11 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
             }
         }
     }
+    
     func getUser() -> UserEntity {
         return user!
     }
+    
     func passwordMach() -> Bool {
         if passwordTextField.stringValue == confirmPasswordTextField.stringValue {
             return true
@@ -67,6 +69,7 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
             return false
         }
     }
+    
     func allFieldsAreFill() -> Bool {
         if nameTextField.stringValue != "" && passwordTextField.stringValue != "" && confirmPasswordTextField.stringValue != "" {
             return true
@@ -75,9 +78,11 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
             return false
         }
     }
+    
     func showUserDetails() {
         nameTextField.stringValue = user!.name!
     }
+    
     func clearFields() {
         confirmPasswordTextField.stringValue = ""
         passwordTextField.stringValue = ""

@@ -9,10 +9,11 @@
 import Cocoa
 
 protocol AddTicketVCDelegate {
+    var selectManagerPopUpButton: NSPopUpButton! {get}
     func addTicket(manager: String, type: String, status: String, content: String)
     func getTicket() -> TicketEntity
-    func getManagersList() -> [ManagerEntity]
     func reloadTicketsTableView()
+    func save()
 }
 
 class AddTicketVC: NSViewController {
@@ -20,11 +21,9 @@ class AddTicketVC: NSViewController {
     
     var ticket: TicketEntity?
     var ticketTypes = ["MESSAGE","COMPLAINT"]
-    var managers: [ManagerEntity]?
     
     var editButtonPresed = false
 
-    @IBOutlet weak var selectManagerPopUpButton: NSPopUpButton!
     @IBOutlet weak var selectTypePopUpButton: NSPopUpButton!
     @IBOutlet weak var ticketTextField: NSTextField!
     @IBOutlet weak var addTcicketButtonOutlet: NSButton!
@@ -32,25 +31,11 @@ class AddTicketVC: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         selectTypePopUpButton.addItems(withTitles: ticketTypes)
-        managers = delegate!.getManagersList()
-        for manager in managers! {
-            selectManagerPopUpButton.addItem(withTitle: manager.name!)
-        }
         if editButtonPresed {
             ticket = delegate!.getTicket()
             addTcicketButtonOutlet.title = "SAVE"
             ticketTextField.stringValue = ticket!.details!
-            for manager in managers! {
-                if manager.name! == ticket!.manager! {
-                    selectManagerPopUpButton.title = manager.name!
-                    break
-                }
-            }
-            for ticketType in ticketTypes {
-                if ticketType == ticket?.type {
-                    selectTypePopUpButton.title = ticketType
-                }
-            }
+            selectTypePopUpButton.title = ticket!.type!
         }
     }
     override func viewDidAppear() {
@@ -59,18 +44,17 @@ class AddTicketVC: NSViewController {
     
     @IBAction func addTicketButton(_ sender: NSButton) {
         if editButtonPresed {
-            ticket?.manager = selectManagerPopUpButton.titleOfSelectedItem
             ticket?.type = selectTypePopUpButton.titleOfSelectedItem
             ticket?.details = ticketTextField.stringValue
+            ticket?.type = selectTypePopUpButton.titleOfSelectedItem
         } else {
-            delegate?.addTicket(manager: selectManagerPopUpButton.titleOfSelectedItem!, type: selectTypePopUpButton.titleOfSelectedItem!,
-                                status: "OPEN", content: ticketTextField.stringValue)
+            delegate?.addTicket(manager: delegate!.selectManagerPopUpButton.titleOfSelectedItem! ,type: selectTypePopUpButton.titleOfSelectedItem!, status: "OPEN", content: ticketTextField.stringValue)
             clearFields()
         }
+        delegate?.save()
         delegate?.reloadTicketsTableView()
     }
     func clearFields() {
-        selectManagerPopUpButton.title = selectManagerPopUpButton.itemTitle(at: 0)
         selectTypePopUpButton.title = selectTypePopUpButton.itemTitle(at: 0)
         ticketTextField.stringValue = ""
     }

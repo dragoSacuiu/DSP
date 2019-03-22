@@ -20,7 +20,7 @@ class UserPAsswordConfirmationVC: NSViewController {
     var user: UserEntity?
     var delegate: AddUserVC?
 
-    @IBOutlet weak var passwordConfirmationTextField: NSTextField!
+    @IBOutlet weak var passwordConfirmationTextField: NSSecureTextField!
     
     @IBOutlet weak var message: NSTextField!
     

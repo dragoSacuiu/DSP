@@ -51,7 +51,6 @@
 		695F95E4214C990C00C079D4 /* TextFilesTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95E3214C990C00C079D4 /* TextFilesTools.swift */; };
 		695F95E7214C995600C079D4 /* UserStoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95E6214C995600C079D4 /* UserStoreData.swift */; };
 		695F95EA214C99E200C079D4 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695F95E9214C99E200C079D4 /* CoreDataManager.swift */; };
-		697837092238262F0005CF8C /* Maxga.swift in Sources */ = {isa = PBXBuildFile; fileRef = 697837082238262F0005CF8C /* Maxga.swift */; };
 		69A8F6F9220495DE00DA38E0 /* ScheduleEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A8F6F7220495DE00DA38E0 /* ScheduleEntity+CoreDataClass.swift */; };
 		69A8F6FA220495DE00DA38E0 /* ScheduleEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A8F6F8220495DE00DA38E0 /* ScheduleEntity+CoreDataProperties.swift */; };
 		69AC7A38222827C00054523C /* LoginVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AC7A37222827C00054523C /* LoginVC.swift */; };
@@ -59,6 +58,7 @@
 		69B586D721DD2688007495FE /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B586D621DD2688007495FE /* Notifications.swift */; };
 		69B774E121B7257B001CF2F6 /* EmiEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B774C921B7257B001CF2F6 /* EmiEntity+CoreDataClass.swift */; };
 		69B774E221B7257B001CF2F6 /* EmiEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B774CA21B7257B001CF2F6 /* EmiEntity+CoreDataProperties.swift */; };
+		69B95D96223E4EA80005FFE0 /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B95D95223E4EA80005FFE0 /* MapManager.swift */; };
 		69C9CDD7221036BE00FA36EE /* DspAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C9CDD6221036BE00FA36EE /* DspAlerts.swift */; };
 		69CC4AF521A5C52500D18681 /* Accounts.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 69CC4AF421A5C52500D18681 /* Accounts.storyboard */; };
 		69D6BDE3221FF2F4008C1573 /* ContactEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69D6BDE1221FF2F4008C1573 /* ContactEntity+CoreDataClass.swift */; };
@@ -78,6 +78,8 @@
 		69F4305022192E9A0032E7E4 /* ActionDetailesEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F4304A22192E9A0032E7E4 /* ActionDetailesEntity+CoreDataProperties.swift */; };
 		69F4305122192E9A0032E7E4 /* EmiDetailesEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F4304B22192E9A0032E7E4 /* EmiDetailesEntity+CoreDataClass.swift */; };
 		69F4305222192E9A0032E7E4 /* EmiDetailesEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F4304C22192E9A0032E7E4 /* EmiDetailesEntity+CoreDataProperties.swift */; };
+		69F64DDD223A453900AA721A /* ServiceModeAccountsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F64DDC223A453900AA721A /* ServiceModeAccountsVC.swift */; };
+		69FEF99622414A610010EEE8 /* SolutionVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69FEF99522414A610010EEE8 /* SolutionVC.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -129,7 +131,6 @@
 		695F95E3214C990C00C079D4 /* TextFilesTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFilesTools.swift; sourceTree = "<group>"; };
 		695F95E6214C995600C079D4 /* UserStoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStoreData.swift; sourceTree = "<group>"; };
 		695F95E9214C99E200C079D4 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
-		697837082238262F0005CF8C /* Maxga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Maxga.swift; sourceTree = "<group>"; };
 		69A8F6F7220495DE00DA38E0 /* ScheduleEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScheduleEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		69A8F6F8220495DE00DA38E0 /* ScheduleEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScheduleEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		69AC7A37222827C00054523C /* LoginVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginVC.swift; sourceTree = "<group>"; };
@@ -137,6 +138,7 @@
 		69B586D621DD2688007495FE /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		69B774C921B7257B001CF2F6 /* EmiEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmiEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		69B774CA21B7257B001CF2F6 /* EmiEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmiEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		69B95D95223E4EA80005FFE0 /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		69C9CDD6221036BE00FA36EE /* DspAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DspAlerts.swift; sourceTree = "<group>"; };
 		69CC4AF421A5C52500D18681 /* Accounts.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Accounts.storyboard; sourceTree = "<group>"; };
 		69D6BDE1221FF2F4008C1573 /* ContactEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContactEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -156,6 +158,8 @@
 		69F4304A22192E9A0032E7E4 /* ActionDetailesEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ActionDetailesEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		69F4304B22192E9A0032E7E4 /* EmiDetailesEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmiDetailesEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		69F4304C22192E9A0032E7E4 /* EmiDetailesEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmiDetailesEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		69F64DDC223A453900AA721A /* ServiceModeAccountsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceModeAccountsVC.swift; sourceTree = "<group>"; };
+		69FEF99522414A610010EEE8 /* SolutionVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolutionVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,7 +226,9 @@
 			children = (
 				695F95BB214C95B100C079D4 /* DspViewController.swift */,
 				695F95DA214C978500C079D4 /* DspManager.swift */,
+				69B95D95223E4EA80005FFE0 /* MapManager.swift */,
 				695F95C2214C95B200C079D4 /* Main.storyboard */,
+				69FEF99422414A2D0010EEE8 /* Actions */,
 				695F95DC214C97CA00C079D4 /* Recivers */,
 				695F95E1214C98DA00C079D4 /* SystemTools */,
 				695F95D7214C974A00C079D4 /* Events */,
@@ -249,7 +255,6 @@
 				69128CD1222558C2002E903B /* UserPAsswordConfirmationVC.swift */,
 				69AC7A37222827C00054523C /* LoginVC.swift */,
 				69AC7A3922282B370054523C /* UsersManager.swift */,
-				697837082238262F0005CF8C /* Maxga.swift */,
 			);
 			path = Users;
 			sourceTree = "<group>";
@@ -270,6 +275,7 @@
 				69ED262D22388F4B00698788 /* AccountsViewController.swift */,
 				6929266121AC596300AAFF23 /* AddAccount.storyboard */,
 				69277C9B21AEFE090088CA57 /* AddAccountViewController.swift */,
+				69F64DDC223A453900AA721A /* ServiceModeAccountsVC.swift */,
 			);
 			path = Accounts;
 			sourceTree = "<group>";
@@ -368,6 +374,14 @@
 				695F95BD214C95B100C079D4 /* DSP.xcdatamodeld */,
 			);
 			path = CoreDataEsentials;
+			sourceTree = "<group>";
+		};
+		69FEF99422414A2D0010EEE8 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				69FEF99522414A610010EEE8 /* SolutionVC.swift */,
+			);
+			path = Actions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -484,6 +498,7 @@
 				69AC7A3A22282B370054523C /* UsersManager.swift in Sources */,
 				695F95E7214C995600C079D4 /* UserStoreData.swift in Sources */,
 				695F95DE214C97F600C079D4 /* ParadoxIprsReciver.swift in Sources */,
+				69FEF99622414A610010EEE8 /* SolutionVC.swift in Sources */,
 				695F95BC214C95B100C079D4 /* DspViewController.swift in Sources */,
 				69F4305022192E9A0032E7E4 /* ActionDetailesEntity+CoreDataProperties.swift in Sources */,
 				693670D52211A2BD006667F8 /* Account.swift in Sources */,
@@ -502,6 +517,7 @@
 				695F95BF214C95B100C079D4 /* DSP.xcdatamodeld in Sources */,
 				69128CCC222543D5002E903B /* ManagerEntity+CoreDataProperties.swift in Sources */,
 				69009BFC22313DE400C6804F /* AddAccountLocationVC.swift in Sources */,
+				69B95D96223E4EA80005FFE0 /* MapManager.swift in Sources */,
 				69A8F6F9220495DE00DA38E0 /* ScheduleEntity+CoreDataClass.swift in Sources */,
 				695F95DB214C978500C079D4 /* DspManager.swift in Sources */,
 				6907281F221B2C9F00629976 /* ObservationsEntity+CoreDataProperties.swift in Sources */,
@@ -511,8 +527,8 @@
 				69086B5A222D2D40007537E4 /* EventEntity+CoreDataClass.swift in Sources */,
 				694A714D2214007800A4AF5F /* AddZoneVC.swift in Sources */,
 				695F95EA214C99E200C079D4 /* CoreDataManager.swift in Sources */,
+				69F64DDD223A453900AA721A /* ServiceModeAccountsVC.swift in Sources */,
 				69128CC82225405B002E903B /* StoreUsers.swift in Sources */,
-				697837092238262F0005CF8C /* Maxga.swift in Sources */,
 				69ED262E22388F4B00698788 /* AccountsViewController.swift in Sources */,
 				69128CCE22255829002E903B /* AddUserVC.swift in Sources */,
 				695F95BA214C95B100C079D4 /* AppDelegate.swift in Sources */,

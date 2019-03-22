@@ -100,23 +100,67 @@ extension DspStoreData {
        return nil
     }
     
-    func storeEmi(id: String, phone: String, active: Bool, statusDetails: String, longitude: Double, latitude: Double) {
+    func storeActionDetails(account: AccountEntity, emiId: String, solution: String, details: String) {
+        let newDetails = NSEntityDescription.insertNewObject(forEntityName: "ActionDetailesEntity", into: managedObjectContext) as! ActionDetailesEntity
+        newDetails.date = NSDate()
+        newDetails.user = UsersManager.activeUser
+        newDetails.emi = emiId
+        newDetails.solution = solution
+        newDetails.detailes = details
+        account.addToActionDetailes(newDetails)
+        saveContext()
+    }
+    
+    func storeEmi(id: String, phone: String, status: String, statusDetails: String, longitude: Double, latitude: Double) {
         let emi = NSEntityDescription.insertNewObject(forEntityName: "EmiEntity", into: managedObjectContext) as! EmiEntity
         emi.id = id
         emi.phone = phone
-        emi.active = active
+        emi.status = status
         emi.statusDetails = statusDetails
         emi.longitude = longitude
         emi.latitude = latitude
         saveContext()
     }
     
-    func getEmi() -> EmiEntity? {
-        return nil
+    func storeTicket(account: AccountEntity, content: String) {
+        let newTicket = NSEntityDescription.insertNewObject(forEntityName: "TicketEntity", into: managedObjectContext) as! TicketEntity
+        newTicket.date = NSDate()
+        newTicket.user = UsersManager.activeUser
+        newTicket.number = getTicketNumber()
+        newTicket.manager = account.manager
+        newTicket.status = "OPEN"
+        newTicket.type = "AUTO"
+        newTicket.details = content
+        account.addToTickets(newTicket)
+        saveContext()
+    }
+    
+    func getTicketNumber() -> Int64 {
+        let fetchDescription = NSFetchRequest<NSFetchRequestResult>(entityName: "TicketNumberEntity")
+        do {
+            let fetchResult = try managedObjectContext.fetch(fetchDescription) as! [TicketNumberEntity]
+            if fetchResult.count == 0 {
+                let firstTicketNumber = NSEntityDescription.insertNewObject(forEntityName: "TicketNumberEntity", into: managedObjectContext) as! TicketNumberEntity
+                firstTicketNumber.number = 1000000
+                saveContext()
+                return firstTicketNumber.number
+            } else {
+                fetchResult[0].number += 1
+                return fetchResult[0].number
+            }
+        } catch {
+            dspAlert.showAlert(message: "Cannot get ticket number from database")
+        }
+        return 0
+    }
+    
+    func getEmi(selectedEmiIndex: Int) -> EmiEntity? {
+        let emis = getEmis()
+        return emis![selectedEmiIndex]
     }
     
     func getEmis() -> [EmiEntity]? {
-        let activeSortDescriptor = NSSortDescriptor(key: "active", ascending: false)
+        let activeSortDescriptor = NSSortDescriptor(key: "status", ascending: false)
         let idSortDescriptor = NSSortDescriptor(key: "id", ascending: true)
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "EmiEntity")
         fetchRequest.sortDescriptors = [activeSortDescriptor, idSortDescriptor]
@@ -132,9 +176,8 @@ extension DspStoreData {
         managedObjectContext.delete(account)
     }
     
-    func deleteEmi(selectedEmiIndex: Int) {
-        var emis = getEmis()
-        managedObjectContext.delete(emis![selectedEmiIndex])
+    func deleteEmi(emi: EmiEntity) {
+        managedObjectContext.delete(emi)
         saveContext()
     }
     

@@ -34,6 +34,7 @@ class ReciversManager: IprsReciverDelegate {
         for index in 0..<blackList.count {
             if accountID == blackList[index] {
                 blackList.remove(at: index)
+                break
             }
         }
     }

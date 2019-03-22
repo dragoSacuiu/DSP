@@ -2,7 +2,7 @@
 //  AccountEntity+CoreDataProperties.swift
 //  DSP
 //
-//  Created by Sacuiu Dragos on 11/03/2019.
+//  Created by Sacuiu Dragos on 22/03/2019.
 //  Copyright © 2019 Sacuiu Dragos. All rights reserved.
 //
 //
@@ -29,15 +29,16 @@ extension AccountEntity {
     @NSManaged public var system: String?
     @NSManaged public var technic: String?
     @NSManaged public var type: String?
+    @NSManaged public var manager: String?
     @NSManaged public var actionDetailes: NSSet?
     @NSManaged public var contacts: NSSet?
     @NSManaged public var emiDetails: NSSet?
     @NSManaged public var events: NSSet?
+    @NSManaged public var location: AccountLocationEntity?
     @NSManaged public var observations: NSSet?
     @NSManaged public var partitions: NSSet?
     @NSManaged public var schedeule: ScheduleEntity?
     @NSManaged public var tickets: NSSet?
-    @NSManaged public var location: AccountLocationEntity?
 
 }
 

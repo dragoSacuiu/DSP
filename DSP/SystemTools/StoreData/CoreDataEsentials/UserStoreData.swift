@@ -25,10 +25,12 @@ class UserStoreData {
         createNewSchedule()
     }
     
-    func getExistingAccount(accountID: String) {
+    func getExistingAccount(accountID: String) -> Bool{
         if let searchedAccount = getAccount(accountId: accountID) {
             account = searchedAccount
-        } else { account = nil }
+            return true
+        }
+        return false
     }
     
 ///////////////////////////////////////////////////////////////////// ADD OBJECTS /////////////////////////////////////////////////////////////////////////////////////////
@@ -175,6 +177,21 @@ extension UserStoreData {
             dspAlert.showAlert(message: "Can't get managers list from database")
         }
         return []
+    }
+    
+    func checkAccountExists(accountId: String) -> Bool {
+        let fetchRequest: NSFetchRequest<AccountEntity> = AccountEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", accountId)
+        do {
+            let fetchResult = try managedObjectContext.fetch(fetchRequest)
+            if fetchResult.count > 0 && fetchResult[0].id == accountId {
+                dspAlert.showAlert(message: "Account ID: \(accountId) already exists!")
+                return true
+            }
+        } catch  {
+            print("Cant get accounts")
+        }
+        return false
     }
     
     func getAccount(accountId: String) -> AccountEntity? {

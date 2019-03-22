@@ -19,6 +19,8 @@ class AddEmiLocationVC: NSViewController, CLLocationManagerDelegate, NSSearchFie
     var delegate: AddEmiLocationVCDelegate?
     
     let locationManager = CLLocationManager()
+    let bucharestCenterCoordinate = CLLocationCoordinate2D(latitude: 44.42676678769212 ,longitude: 26.10243551496884)
+    let areaSpan = MKCoordinateSpan(latitudeDelta: 0.10, longitudeDelta: 0.10)
     
     @IBOutlet weak var mapView: MKMapView!
     var annotation = MKPointAnnotation()
@@ -27,7 +29,12 @@ class AddEmiLocationVC: NSViewController, CLLocationManagerDelegate, NSSearchFie
         super.viewDidLoad()
         locationManager.delegate = self
         mapView.delegate = self
-        
+        setMapRegion(coordinate: bucharestCenterCoordinate, span: areaSpan)
+    }
+    
+    func setMapRegion(coordinate: CLLocationCoordinate2D, span: MKCoordinateSpan) {
+        let region = MKCoordinateRegion(center: coordinate, span: span)
+        mapView.region = region
     }
     
     @IBAction func searchField(_ sender: NSSearchField) {

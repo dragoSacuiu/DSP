@@ -13,8 +13,9 @@ class AccountEvents {
     var events: [Event]
     var priorityEvent: Event?
     var priorityEventType: EventType?
-    var accountDetailes: AccountEntity?
+    var details: AccountEntity?
     var generatedAlarm = false
+    var emi: EmiEntity?
     
     init(id: String) {
         self.id = id

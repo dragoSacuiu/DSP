@@ -6,6 +6,7 @@
         <attribute name="comunicator" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="contract" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="manager" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objective" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="periodicTest" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="sales" optional="YES" attributeType="String" syncable="YES"/>
@@ -35,6 +36,8 @@
     <entity name="ActionDetailesEntity" representedClassName="ActionDetailesEntity" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="detailes" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="emi" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="solution" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="actionDetailes" inverseEntity="AccountEntity" syncable="YES"/>
     </entity>
@@ -58,11 +61,12 @@
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="emiDetails" inverseEntity="AccountEntity" syncable="YES"/>
     </entity>
     <entity name="EmiEntity" representedClassName="EmiEntity" syncable="YES">
-        <attribute name="active" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="distance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="phone" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="status" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="statusDetails" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="EventEntity" representedClassName="EventEntity" syncable="YES">
@@ -125,21 +129,21 @@
         <relationship name="partition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PartitionEntity" inverseName="zones" inverseEntity="PartitionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="AccountEntity" positionX="98.6015625" positionY="412.4453125" width="128" height="360"/>
+        <element name="AccountEntity" positionX="98.6015625" positionY="412.4453125" width="128" height="375"/>
         <element name="AccountLocationEntity" positionX="-360" positionY="-342" width="128" height="150"/>
-        <element name="ActionDetailesEntity" positionX="-433.98046875" positionY="707.6015625" width="128" height="103"/>
+        <element name="ActionDetailesEntity" positionX="-433.98046875" positionY="707.6015625" width="128" height="135"/>
         <element name="BlackListEntity" positionX="-485.01953125" positionY="65.8359375" width="128" height="60"/>
         <element name="ContactEntity" positionX="330.3203125" positionY="-126.1328125" width="128" height="165"/>
         <element name="EmiDetailesEntity" positionX="-413.44140625" positionY="517.8984375" width="128" height="103"/>
-        <element name="EmiEntity" positionX="-521.2109375" positionY="-460.59375" width="128" height="135"/>
+        <element name="EmiEntity" positionX="-521.2109375" positionY="-460.59375" width="128" height="150"/>
         <element name="EventEntity" positionX="-305.24609375" positionY="165.19921875" width="128" height="165"/>
         <element name="ManagerEntity" positionX="-217.6953125" positionY="-495.30078125" width="128" height="88"/>
         <element name="ObservationsEntity" positionX="450.83984375" positionY="256.83984375" width="128" height="105"/>
-        <element name="PartitionEntity" positionX="-154.72265625" positionY="-92.54296875" width="128" height="105"/>
+        <element name="PartitionEntity" positionX="63.14453125" positionY="-54.51171875" width="128" height="105"/>
         <element name="ScheduleEntity" positionX="-561.57421875" positionY="193.25" width="128" height="165"/>
         <element name="TicketEntity" positionX="419.45703125" positionY="677.30078125" width="128" height="165"/>
         <element name="TicketNumberEntity" positionX="-424.48828125" positionY="-114.078125" width="128" height="60"/>
         <element name="UserEntity" positionX="-175.51171875" positionY="-365.42578125" width="128" height="73"/>
-        <element name="ZoneEntity" positionX="-348.1640625" positionY="-258.91015625" width="128" height="90"/>
+        <element name="ZoneEntity" positionX="94.00390625" positionY="-258.4453125" width="128" height="90"/>
     </elements>
 </model>

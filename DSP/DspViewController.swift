@@ -10,31 +10,41 @@ import Cocoa
 import MapKit
 import CoreLocation
 
-class DSPViewController: NSViewController, MKMapViewDelegate, DspVCDelegate, LoginVCDelegate, NSSpeechSynthesizerDelegate {
+class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesizerDelegate, DspVCDelegate, LoginVCDelegate {
     var narator = NSSpeechSynthesizer()
     var dspManager = DspManager()
+    let mapManager = MapManager()
+    let dspAlert = DspAlert()
     
-    var accesGranted = true
+    var accesGranted = false
     
     let dateFormater = DateFormatter()
     
     let locationManager = CLLocationManager()
-    let bucharestCenterCoordinate = CLLocationCoordinate2D(latitude: 44.42676678769212 ,longitude: 26.10243551496884)
-    let annotationSpan = MKCoordinateSpan(latitudeDelta: 0.0050, longitudeDelta: 0.0050)
-    let areaSpan = MKCoordinateSpan(latitudeDelta: 0.10, longitudeDelta: 0.10)
     
     var priorityEventPartition = 0
     var accountTableSelectedRow = 0
     var partitionTableSelectedRow = 0
     var emiTableSelectedRow = 0
     
-    lazy var accountsEvents = dspManager.accountsEvents
-    lazy var selectedAccount = accountsEvents[accountTableSelectedRow]
-    lazy var accountDetailes = selectedAccount.accountDetailes!
-    lazy var priorityEvent = selectedAccount.priorityEvent
-    lazy var priorityEventType = dspManager.getEventType(event: priorityEvent!)
-    lazy var priorityEventColor = priorityEventType.color
-    lazy var priorityHigh: Bool = { return priorityEvent!.priority <= 6 }()
+    var emis = [EmiEntity]()
+    var selectedEmi: EmiEntity?
+    var selectedEmiCLCoordinate: CLLocationCoordinate2D?
+    var selectedEmiCLLocation: CLLocation?
+    
+    enum emiStatus: String {
+        case available = "AVAILABLE"
+        case unavailable = "UNAVAILABLE"
+        case inAction = "IN ACTION"
+        case waiting = "WAITING"
+    }
+    
+    var selectedAccount: AccountEvents?
+    var priorityEventType: EventType?
+    var priorityEventColor: CGColor?
+    var priorityHigh: Bool?
+    var selectedAccountCLCoordinate: CLLocationCoordinate2D?
+    var selectedAccountCLLocation: CLLocation?
     
     let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
     let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: true)
@@ -50,7 +60,7 @@ class DSPViewController: NSViewController, MKMapViewDelegate, DspVCDelegate, Log
     @IBOutlet weak var emiTableView: NSTableView!
     @IBOutlet weak var observationsTableView: NSTableView!
     @IBOutlet weak var emiDetailsTableView: NSTableView!
-    @IBOutlet weak var interventionsDetailsTableView: NSTableView!
+    @IBOutlet weak var actionDetailsTableView: NSTableView!
     @IBOutlet weak var ticketsTableView: NSTableView!
 
     @IBOutlet weak var activateButtonOutlet: NSButton!
@@ -58,16 +68,37 @@ class DSPViewController: NSViewController, MKMapViewDelegate, DspVCDelegate, Log
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //login()
-        tableViewsInit()
+        login()
         dspManager.dspVCDelegate = self
         mapView.delegate = self
-        setMapRegion(coordinate: bucharestCenterCoordinate, span: areaSpan)
+        mapManager.setDefault(map: mapView)
         narator.delegate = self
-        emiTableView.reloadData()
-        
+        emis = dspManager.getEmis()
         dateFormater.dateStyle = .short
         dateFormater.timeStyle = .short
+        tableViewsInit()
+    }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        self.view.window?.title = "DSP                                                                              "
+    }
+    
+    func exitApplication() {
+        NSApp.terminate(self)
+    }
+    
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(polyline: overlay as! MKPolyline)
+        renderer.strokeColor = NSColor.systemRed
+        return renderer
+    }
+    
+    func login() {
+        let mainStoryBoard = NSStoryboard(name: "Main", bundle: nil)
+        let loginVC = mainStoryBoard.instantiateController(withIdentifier: "loginVC") as! LoginVC
+        loginVC.delegate = self
+        self.presentAsModalWindow(loginVC)
     }
     
     @IBAction func logoutButton(_ sender: NSButton) {
@@ -87,71 +118,24 @@ class DSPViewController: NSViewController, MKMapViewDelegate, DspVCDelegate, Log
         }
     }
     
-    func login() {
-        let mainStoryBoard = NSStoryboard(name: "Main", bundle: nil)
-        let loginVC = mainStoryBoard.instantiateController(withIdentifier: "loginVC") as! LoginVC
-        loginVC.delegate = self
-        self.presentAsModalWindow(loginVC)
-    }
-    
-    func exitApplication() {
-        NSApp.terminate(self)
-    }
-    
     func activate() {
-        activateButtonOutlet.title = "DEACTIVATE"
+        activateButtonOutlet.title = "DEACTIVATE                         "
         dspManager.run(getEventsTimeInterval: 3.0)
     }
+    
     func deactivate() {
-        activateButtonOutlet.title = "ACTIVATE"
+        activateButtonOutlet.title = "ACTIVATE                           "
         dspManager.stop()
     }
     
     func generateAlert() {
-        accountsEvents = dspManager.accountsEvents
-        for account in accountsEvents {
+        for account in dspManager.accountsEvents {
             if !account.generatedAlarm {
-                setAccount(account: account)
+                setSelectedAccount(account: account)
                 generateAlarm(account: account)
             }
             eventsTableView.reloadData()
         }
-    }
-    
-    @IBAction func cancelAlarmButton(_ sender: NSButton) {
-        dspManager.removeAlarm(selectedAccountIndex: accountTableSelectedRow)
-        accountTableSelectedRow = 0
-        reloadTableViewData()
-    }
-    
-    func setMapRegion(coordinate: CLLocationCoordinate2D, span: MKCoordinateSpan) {
-        let region = MKCoordinateRegion(center: coordinate, span: span)
-        mapView.region = region
-    }
-    
-    func showItemOnMap(name: String, coordinate: CLLocationCoordinate2D) {
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        annotation.title = name
-        mapView.addAnnotation(annotation)
-        setMapRegion(coordinate: annotation.coordinate, span: annotationSpan)
-        mapView.selectAnnotation(annotation, animated: true)
-    }
-    @IBAction func removeEmiButton(_ sender: NSButton) {
-        dspManager.storeData.deleteEmi(selectedEmiIndex: emiTableSelectedRow)
-        emiTableView.reloadData()
-    }
-    
-    func setAccount(account: AccountEvents) {
-        selectedAccount = account
-        accountDetailes = account.accountDetailes!
-        priorityEvent = account.priorityEvent
-        priorityEventType = dspManager.getEventType(event: priorityEvent!)
-        priorityEventColor = priorityEventType.color
-        eventAlertImage.image = account.priorityEventType?.image
-        let coordinate = CLLocationCoordinate2D(latitude: accountDetailes.location!.latitude, longitude: accountDetailes.location!.longitude)
-        showItemOnMap(name: accountDetailes.objective! ,coordinate: coordinate)
-        reloadTableViewData()
     }
     
     func generateAlarm(account: AccountEvents) {
@@ -161,32 +145,220 @@ class DSPViewController: NSViewController, MKMapViewDelegate, DspVCDelegate, Log
         }
         account.generatedAlarm = true
     }
+    
+    @IBAction func autoActionButton(_ sender: NSButton) {
+        if emis.count > 0 {
+            setSelectedEmi(emi: emis[0])
+            sendEmi(emi: selectedEmi!)
+        }
+    }
+    
+    @IBAction func sendEmiButton(_ sender: NSButton) {
+        if selectedEmi != nil {
+            sendEmi(emi: selectedEmi!)
+        }
+    }
+    
+    @IBAction func notifyClientButton(_ sender: NSButton) {
+        
+    }
+    
+    @IBAction func addServiceMode(_ sender: NSButton) {
+        dspManager.addToServiceMode(index: accountTableSelectedRow)
+        cancelAlarm()
+    }
+    
+    @IBAction func addTicketButton(_ sender: NSButton) {
+        if let event = selectedAccount?.priorityEvent {
+            if event.priority == 6 {
+                dspManager.storeData.storeTicket(account: selectedAccount!.details!, content: event.name)
+                actionDetailsTableView.reloadData()
+                ticketsTableView.reloadData()
+            } else {
+                dspAlert.showAlert(message: "Event must be of type TROUBLE")
+            }
+        }
+    }
+    
+    func sendEmi(emi: EmiEntity) {
+        guard selectedAccount?.emi == nil else { dspAlert.showAlert(message: "Already sent EMI with ID: \(selectedAccount!.emi!.id!)"); return }
+        guard emi.status == emiStatus.available.rawValue else { dspAlert.showAlert(message: "EMI with ID: \(emi.id!) isn't avaialable!"); return }
+        selectedAccount?.emi = emi
+        selectedEmi?.status = emiStatus.inAction.rawValue
+        selectedEmi?.statusDetails = "SENT TO: \(selectedAccount!.details!.objective!) FOR: \(selectedAccount!.priorityEvent!.name)"
+        dspManager.storeData.storeActionDetails(account: selectedAccount!.details!, emiId: selectedEmi!.id!, solution: "SENT EMI", details: selectedAccount!.priorityEvent!.name)
+        mapManager.calculatingRout(map: mapView, source: selectedEmiCLCoordinate!, destination: selectedAccountCLCoordinate!)
+        sortEmi()
+        emiTableView.reloadData()
+        actionDetailsTableView.reloadData()
+    }
+    
+    func cancelEmi() {
+        if let emi = selectedAccount?.emi {
+            emi.status = emiStatus.available.rawValue
+            emi.statusDetails = emiStatus.waiting.rawValue
+            dspManager.storeData.saveContext()
+            selectedAccount?.emi = nil
+            resetDspInterface()
+            showSelectedAccountOnMap()
+        }
+    }
+
+    func resetDspInterface() {
+        reloadTableViewData()
+        let annotations = mapView.annotations
+        let overLays = mapView.overlays
+        mapView.removeAnnotations(annotations)
+        mapView.removeOverlays(overLays)
+        mapManager.setDefault(map: mapView)
+    }
+    
+    @IBAction func removeEmiButton(_ sender: NSButton) {
+        //guard selectedEmi?.status != emiStatus.inAction.rawValue else { dspAlert.showAlert(message: "EMI IN ACTION.\nDeleting is denied! "); return }
+        dspManager.storeData.deleteEmi(emi: selectedEmi!)
+        emis = dspManager.storeData.getEmis()!
+        sortEmi()
+        resetDspInterface()
+    }
+    
+    func cancelAlarm() {
+        if dspManager.accountsEvents.count != 0 {
+            dspManager.accountsEvents.remove(at: accountTableSelectedRow)
+            if dspManager.accountsEvents.count != 0 {
+                accountTableSelectedRow = 0
+                setSelectedAccount(account: dspManager.accountsEvents[accountTableSelectedRow])
+            } else { selectedAccount = nil }
+        }
+        resetDspInterface()
+        eventAlertImage.image = nil
+    }
+    
+    func setSelectedAccount(account: AccountEvents) {
+        selectedAccount = account
+        priorityEventType = dspManager.getEventType(event: selectedAccount!.priorityEvent!)
+        priorityEventColor = priorityEventType!.color
+        priorityHigh = { return selectedAccount!.priorityEvent!.priority <= 6 }()
+        eventAlertImage.image = account.priorityEventType?.image
+        let accountLocation = account.details!.location!
+        selectedAccountCLCoordinate = CLLocationCoordinate2D(latitude: accountLocation.latitude , longitude: accountLocation.longitude)
+        selectedAccountCLLocation = CLLocation(latitude: accountLocation.latitude, longitude: accountLocation.longitude)
+        sortEmi()
+        reloadTableViewData()
+        mapManager.showItemOnMap(map: mapView, name: selectedAccount!.details!.objective! ,coordinate: selectedAccountCLCoordinate!)
+    }
+    
+    func setSelectedEmi(emi: EmiEntity) {
+        selectedEmi = emi
+        selectedEmiCLCoordinate = CLLocationCoordinate2D(latitude: emi.latitude, longitude: emi.longitude)
+        selectedEmiCLLocation = CLLocation(latitude: emi.latitude, longitude: emi.longitude)
+        mapManager.showItemOnMap(map: mapView, name: emis[emiTableSelectedRow].id!, coordinate: selectedEmiCLCoordinate!)
+    }
+    
+    func showSelectedEmiOnMap() {
+        mapManager.showItemOnMap(map: mapView, name: selectedEmi!.id!, coordinate: selectedEmiCLCoordinate!)
+    }
+    
+    func showSelectedAccountOnMap() {
+        mapManager.showItemOnMap(map: mapView, name: selectedAccount!.details!.objective!, coordinate: selectedAccountCLCoordinate!)
+    }
+    
+    func sortEmi() {
+        for emi in emis {
+            let emiCLLocation = CLLocation(latitude: emi.latitude, longitude: emi.longitude)
+            emi.distance = mapManager.calculateDistance(map: mapView, source: emiCLLocation, destination: selectedAccountCLLocation!)
+        }
+        var availableEmi = [EmiEntity]()
+        var unavailableEmi = [EmiEntity]()
+        var inActionEmi = [EmiEntity]()
+        for emi in emis {
+            switch emi.status {
+            case emiStatus.available.rawValue : availableEmi.append(emi)
+            case emiStatus.unavailable.rawValue: unavailableEmi.append(emi)
+            case emiStatus.inAction.rawValue: inActionEmi.append(emi)
+            default: dspAlert.showAlert(message: "Something went worong sorting EMI")
+            }
+        }
+        emis = availableEmi.sorted(by: {($0.distance < $1.distance)}) + inActionEmi + unavailableEmi
+        emiTableView.reloadData()
+    }
+
 }
 
-extension DSPViewController: AddEmiVCDelegate {
+extension DSPViewController: AddEmiVCDelegate, ServiceModeVCDelegate, SolutionVCDelegate {
     
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier == "addAccountSegue" {
             if let viewcontroller = segue.destinationController as? AddAccountViewController {
                 viewcontroller.delegate = dspManager
-                viewcontroller.mazga = true
             }
         } else if segue.identifier == "addEmiSegue" {
             if let viewController = segue.destinationController as? AddEmiVC {
                 viewController.delegate = self
             }
+        } else if segue.identifier == "editEmiSegue" {
+            if let viewController = segue.destinationController as? AddEmiVC {
+                viewController.delegate = self
+                viewController.editButtonPresed = true
+            }
+        } else if segue.identifier == "serviceModeSegue" {
+            if let viewController = segue.destinationController as? ServiceModeAccountsVC {
+                viewController.delegate = self
+            }
+        } else if segue.identifier == "solutionVCSegue" {
+            if let viewController = segue.destinationController as? SolutionVC {
+                viewController.delegate = self
+            }
         }
     }
     
-    func addEmi(id: String, phone: String, active: Bool, statusDetails: String, longitude: Double, latitude: Double) {
-        dspManager.storeData.storeEmi(id: id, phone: phone, active: active, statusDetails: statusDetails, longitude: longitude, latitude: latitude)
+    override func shouldPerformSegue(withIdentifier identifier: NSStoryboardSegue.Identifier, sender: Any?) -> Bool {
+        if identifier == "editEmiSegue" {
+            if selectedEmi?.status == emiStatus.inAction.rawValue {
+                dspAlert.showAlert(message: "EMI IN ACTION.\nEditing is denied! ")
+                return false
+            }
+        }
+        return true
+    }
+    
+    func getServiceModeAccounts() -> [AccountEvents] {
+        return dspManager.serviceModeAccounts
+    }
+    
+    func removeFromServiceMode(index: Int) {
+        dspManager.removeFromServiceMode(index: index)
+    }
+    
+    func addEmi(id: String, phone: String, status: String, statusDetails: String, longitude: Double, latitude: Double) {
+        dspManager.storeData.storeEmi(id: id, phone: phone, status: status, statusDetails: statusDetails, longitude: longitude, latitude: latitude)
+        emis = dspManager.getEmis()
         emiTableView.reloadData()
     }
     
     func getEmi() -> EmiEntity {
-        return EmiEntity()
+        return selectedEmi!
     }
     
+    func saveEmi() {
+        dspManager.storeData.saveContext()
+        sortEmi()
+    }
+    
+    func setActionSolution(solution: String, details: String) {
+        var emi = String()
+        if selectedAccount?.emi == nil {
+            emi = "NO"
+        } else {
+            emi = selectedAccount!.emi!.id!
+        }
+        if solution == "TICKET CREATED" {
+            dspManager.storeData.storeActionDetails(account: selectedAccount!.details!, emiId: emi, solution: solution, details: selectedAccount!.priorityEvent!.name)
+        } else {
+            dspManager.storeData.storeActionDetails(account: selectedAccount!.details!, emiId: emi, solution: solution, details: details)
+        }
+        cancelEmi()
+        cancelAlarm()
+    }
 }
 
 extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
@@ -210,6 +382,8 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
         observationsTableView.dataSource = self
         emiDetailsTableView.delegate = self
         emiDetailsTableView.dataSource = self
+        actionDetailsTableView.delegate = self
+        actionDetailsTableView.dataSource = self
         ticketsTableView.delegate = self
         ticketsTableView.dataSource = self
     }
@@ -225,6 +399,7 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
         emiTableView.reloadData()
         observationsTableView.reloadData()
         emiDetailsTableView.reloadData()
+        actionDetailsTableView.reloadData()
         ticketsTableView.reloadData()
     }
     
@@ -233,7 +408,7 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
         if tableViewSelected == accountsTableView {
             guard accountsTableView.selectedRow == -1 else {
                 accountTableSelectedRow = accountsTableView.selectedRow
-                setAccount(account: accountsEvents[accountTableSelectedRow])
+                setSelectedAccount(account: dspManager.accountsEvents[accountTableSelectedRow])
                 return
             }
         } else if tableViewSelected == partitionsTableView {
@@ -245,60 +420,46 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
         } else if tableViewSelected == emiTableView {
             guard emiTableView.selectedRow == -1 else {
                 emiTableSelectedRow = emiTableView.selectedRow
+                setSelectedEmi(emi: emis[emiTableSelectedRow])
                 return
             }
-        } else if 
+        }
     }
-    
+
     func numberOfRows(in tableView: NSTableView) -> Int {
-        if dspManager.accountsEvents.count > 0 {
-            if tableView == accountsTableView {
-                return dspManager.accountsEvents.count
-            } else if tableView == eventsTableView {
-                return selectedAccount.events.count
-            } else if tableView == accountDetailesTableView {
-                return 1
-            } else if tableView == scheduleTableView {
-                return 7
-            } else if tableView == partitionsTableView {
-                if let partitions = accountDetailes.partitions {
-                    return partitions.count
-                } else {return 0}
-            } else if tableView == zonesTableView {
-                if let partitions = accountDetailes.partitions {
-                    let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
-                    guard priorityEvent?.partition != 0 && sortedPartitions.count == 0 else {
-                        if let zones = sortedPartitions[partitionTableSelectedRow].zones {
-                            return zones.count
-                        }
-                        return 0
-                    }
-                    for partition in sortedPartitions {
-                        guard partition.number != priorityEvent!.partition else {
-                            if let zones = partition.zones {
-                                return zones.count
-                            }
-                            return 0
-                        }
-                    }
-                } else {return 0}
-            } else if tableView == emiTableView {
-                if let emis = dspManager.storeData.getEmis() {
-                    return emis.count
-                } else {return 0}
-            } else if tableView == observationsTableView {
-                if let observations = accountDetailes.observations {
-                    return observations.count
-                } else {return 0}
-            } else if tableView == emiDetailsTableView {
-                if let emiDetails = accountDetailes.emiDetails {
-                    return emiDetails.count
-                } else {return 0}
-            } else if tableView == ticketsTableView {
-                if let tickets = accountDetailes.tickets {
-                    return tickets.count
-                } else {return 0}
+        if tableView == accountsTableView { return dspManager.accountsEvents.count }
+        else if tableView == accountDetailesTableView { return 1 }
+        else if tableView == scheduleTableView { return 7 }
+        
+        guard let account = selectedAccount else { return 0 }
+        if tableView == eventsTableView {
+            return account.events.count
+        } else if tableView == partitionsTableView {
+            guard let partitions = account.details!.partitions else { return 0 }
+            return partitions.count
+        } else if tableView == zonesTableView {
+            guard let partitions = account.details!.partitions else { return 0 }
+            guard partitions.count != 0 else {return 0}
+            let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+            guard account.priorityEvent!.partition != 0 && sortedPartitions.count == 0 else {
+                if let zones = sortedPartitions[partitionTableSelectedRow].zones { return zones.count }
+                return 0
             }
+        } else if tableView == emiTableView {
+            guard let emis = dspManager.storeData.getEmis() else { return 0 }
+            return emis.count
+        } else if tableView == observationsTableView {
+            guard let observations = account.details!.observations else { return 0 }
+            return observations.count
+        } else if tableView == emiDetailsTableView {
+            guard let emiDetails = account.details!.emiDetails else { return 0 }
+            return emiDetails.count
+        } else if tableView == ticketsTableView {
+            guard let tickets = account.details!.tickets else { return 0 }
+            return tickets.count
+        } else if tableView == actionDetailsTableView {
+            guard let actionDetails = account.details!.actionDetailes else { return 0 }
+            return actionDetails.count
         }
         return 0
     }
@@ -323,35 +484,33 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
             return cell
         }
 
-        if dspManager.accountsEvents.count > 0 {
-
-            if tableView == self.accountsTableView {
-                
-                let priorityEventDate = dateFormater.string(from: priorityEvent!.date as Date)
+        if tableView == self.accountsTableView {
+            if selectedAccount != nil {
+                let priorityEventDate = dateFormater.string(from: selectedAccount!.priorityEvent!.date as Date)
                 let date = priorityEventDate.components(separatedBy: " ")
-                let eventType = accountsEvents[row].priorityEvent
+                let eventType = dspManager.accountsEvents[row].priorityEvent
                 let color = dspManager.getEventType(event: eventType!).color
                 
                 if tableColumn?.identifier.rawValue == "accountTableViewAccountColumn" {
-                    return generateBackgroundColoredCell(identifier: "AccountTableAccountCell", value: accountsEvents[row].id, color: color)
+                    return generateBackgroundColoredCell(identifier: "AccountTableAccountCell", value: dspManager.accountsEvents[row].id, color: color)
                     
                 }else if tableColumn?.identifier.rawValue == "accountTableViewTimeColumn" {
                     return generateBackgroundColoredCell(identifier: "AccountTableTimeCell", value: date[1], color: color)
                     
                 }else if tableColumn?.identifier.rawValue == "accountTableViewEventColumn" {
-                    return generateBackgroundColoredCell(identifier: "AccountTableEventCell", value: accountsEvents[row].priorityEvent!.name, color: color)
-    
+                    return generateBackgroundColoredCell(identifier: "AccountTableEventCell", value: dspManager.accountsEvents[row].priorityEvent!.name, color: color)
+                    
                 }else if tableColumn?.identifier.rawValue == "accountTableViewObjectiveColumn" {
-                    if let objectiveName = accountsEvents[row].accountDetailes!.objective {
+                    if let objectiveName = dspManager.accountsEvents[row].details!.objective {
                         return generateBackgroundColoredCell(identifier: "AccountTableObjectiveCell", value: objectiveName, color: color)
                     } else {
                         return generateBackgroundColoredCell(identifier: "AccountTableObjectiveCell", value: "UNREGISTERED ACCOUNT", color: color)
                     }
                 }
-                
-            } else if tableView == self.eventsTableView {
-                let event = selectedAccount.events[row]
-                
+            }
+        } else if tableView == self.eventsTableView {
+            if selectedAccount != nil {
+                let event = selectedAccount!.events[row]
                 let color = dspManager.getEventType(event: event).color
                 
                 if tableColumn?.identifier.rawValue == "eventsTableDateColumn" {
@@ -376,221 +535,245 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
                     return generateBackgroundColoredCell(identifier: "eventsTableEventTypeCell", value: event.name, color: color)
                     
                 }
-            } else if tableView == self.accountDetailesTableView {
-    
+            }
+        } else if tableView == self.accountDetailesTableView {
+            if selectedAccount != nil {
                 if tableColumn?.identifier.rawValue == "accountDetailesAccount" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesAccountCell", value: accountDetailes.id!, color: priorityEventColor)
-    
+                    return generateBackgroundColoredCell(identifier: "accountDetailesAccountCell", value: selectedAccount!.details!.id!, color: priorityEventColor!)
+                    
                 } else if tableColumn?.identifier.rawValue == "accountDetailesType" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesTypeCell", value: accountDetailes.type!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesTypeCell", value: selectedAccount!.details!.type!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesObjective" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesObjectiveCell", value: accountDetailes.objective!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesObjectiveCell", value: selectedAccount!.details!.objective!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesClient" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesClientCell", value: accountDetailes.client!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesClientCell", value: selectedAccount!.details!.client!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesAdress" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesAdressCell", value: "\(accountDetailes.location!.adress1! ) \(accountDetailes.location!.adress2!)",
-                        color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesAdressCell", value: "\(selectedAccount!.details!.location!.adress1! ) \(selectedAccount!.details!.location!.adress2!)",
+                        color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesCity" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesCityCell", value: accountDetailes.location!.city!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesCityCell", value: selectedAccount!.details!.location!.city!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesCounty" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesCountyCell", value: accountDetailes.location!.county!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesCountyCell", value: selectedAccount!.details!.location!.county!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSales" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesSalesCell", value: accountDetailes.sales!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesSalesCell", value: selectedAccount!.details!.sales!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesContract" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesContractCell", value: accountDetailes.contract!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesContractCell", value: selectedAccount!.details!.contract!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesTechnic" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesTechnicCell", value: accountDetailes.technic!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesTechnicCell", value: selectedAccount!.details!.technic!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesArmed" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesArmedCell", value: "Yes", color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesArmedCell", value: "Yes", color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSystem" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesSystemCell", value: accountDetailes.system!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesSystemCell", value: selectedAccount!.details!.system!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesComunicator" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesComunicatorCell", value: accountDetailes.comunicator!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesComunicatorCell", value: selectedAccount!.details!.comunicator!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesTest" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesTestCell", value: accountDetailes.periodicTest!, color: priorityEventColor)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesTestCell", value: selectedAccount!.details!.periodicTest!, color: priorityEventColor!)
                     
                 }
-            } else if tableView == scheduleTableView {
-                if priorityHigh {
-                    let calendar = NSCalendar(identifier: .gregorian)
-                    calendar?.firstWeekday = 2
-                    let weekDay = (calendar?.component(.weekday, from: NSDate() as Date))! - 2
-                    let weekDays = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
-                    if weekDay == row {
-                        if tableColumn?.identifier.rawValue == "dayColumn" {
-                            return generateBackgroundColoredCell(identifier: "dayCell", value: weekDays[row], color: priorityEventColor)
+            }
+        } else if tableView == scheduleTableView {
+            if selectedAccount != nil && priorityHigh! {
+                let calendar = NSCalendar(identifier: .gregorian)
+                calendar?.firstWeekday = 2
+                let weekDay = (calendar?.component(.weekday, from: NSDate() as Date))! - 2
+                let weekDays = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+                if weekDay == row {
+                    if tableColumn?.identifier.rawValue == "dayColumn" {
+                        return generateBackgroundColoredCell(identifier: "dayCell", value: weekDays[row], color: priorityEventColor!)
+                    }
+                } else {
+                    if tableColumn?.identifier.rawValue == "dayColumn" {
+                        return generateCell(identifier: "dayCell", value: weekDays[row])
+                    }
+                }
+                if let schedule = selectedAccount!.details!.schedeule {
+                    let dayTimes = [schedule.monday, schedule.tuesday, schedule.wednesday, schedule.thursday, schedule.friday, schedule.saturday, schedule.sunday]
+                    if dayTimes[row]! != "" {
+                        let startTime = dayTimes[row]!.components(separatedBy: " ")[0]
+                        let endTime = dayTimes[row]!.components(separatedBy: " ")[1]
+                        if weekDay == row {
+                            if tableColumn?.identifier.rawValue == "openColumn" {
+                                return generateBackgroundColoredCell(identifier: "openCell", value: startTime, color: priorityEventColor!)
+                            } else if tableColumn?.identifier.rawValue == "closedColumn" {
+                                return generateBackgroundColoredCell(identifier: "closedCell", value: endTime, color: priorityEventColor!)
+                            } else if tableColumn?.identifier.rawValue == "disarmedColulmn" {
+                                return generateBackgroundColoredCell(identifier: "disarmedCell", value: "", color: priorityEventColor!)
+                            } else if tableColumn?.identifier.rawValue == "armedColumn" {
+                                return generateBackgroundColoredCell(identifier: "armedCell", value: "", color: priorityEventColor!)
+                            }
+                        } else {
+                            if tableColumn?.identifier.rawValue == "openColumn" {
+                                return generateCell(identifier: "openCell", value: startTime)
+                            } else if tableColumn?.identifier.rawValue == "closedColumn" {
+                                return generateCell(identifier: "closedCell", value: endTime)
+                            } else if tableColumn?.identifier.rawValue == "disarmedColulmn" {
+                                return generateCell(identifier: "disarmedCell", value: "")
+                            } else if tableColumn?.identifier.rawValue == "armedColumn" {
+                                return generateCell(identifier: "armedCell", value: "")
+                            }
+                        }
+                    }
+                }
+            }
+        } else if tableView == partitionsTableView {
+            if selectedAccount != nil && priorityHigh! {
+                if let partitions = selectedAccount!.details!.partitions {
+                    let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+                    let partition = sortedPartitions[row]
+                    
+                    if partition.number == selectedAccount!.priorityEvent!.partition {
+                        if tableColumn?.identifier.rawValue == "partitionsTableNumberColumn"{
+                            return generateBackgroundColoredCell(identifier: "partitionTableNumberCell", value: String(partition.number), color: priorityEventColor!)
+                        }
+                        if tableColumn?.identifier.rawValue == "partitionTableNamesColumn"{
+                            return generateBackgroundColoredCell(identifier: "partitionTableNameCell", value: partition.name!, color: priorityEventColor!)
+                        }
+                        if tableColumn?.identifier.rawValue == "partitionTableArmedColumn"{
+                            return generateBackgroundColoredCell(identifier: "partitionTableArmedCell", value: "", color: priorityEventColor!)
                         }
                     } else {
-                        if tableColumn?.identifier.rawValue == "dayColumn" {
-                            return generateCell(identifier: "dayCell", value: weekDays[row])
+                        if tableColumn?.identifier.rawValue == "partitionsTableNumberColumn"{
+                            return generateCell(identifier: "partitionTableNumberCell", value: String(partition.number))
                         }
-                    }
-                    if let schedule = accountDetailes.schedeule {
-                        let dayTimes = [schedule.monday, schedule.tuesday, schedule.wednesday, schedule.thursday, schedule.friday, schedule.saturday, schedule.sunday]
-                        if dayTimes[row]! != "" {
-                            let startTime = dayTimes[row]!.components(separatedBy: " ")[0]
-                            let endTime = dayTimes[row]!.components(separatedBy: " ")[1]
-                            if weekDay == row {
-                                if tableColumn?.identifier.rawValue == "openColumn" {
-                                    return generateBackgroundColoredCell(identifier: "openCell", value: startTime, color: priorityEventColor)
-                                } else if tableColumn?.identifier.rawValue == "closedColumn" {
-                                    return generateBackgroundColoredCell(identifier: "closedCell", value: endTime, color: priorityEventColor)
-                                } else if tableColumn?.identifier.rawValue == "disarmedColulmn" {
-                                    return generateBackgroundColoredCell(identifier: "disarmedCell", value: "", color: priorityEventColor)
-                                } else if tableColumn?.identifier.rawValue == "armedColumn" {
-                                    return generateBackgroundColoredCell(identifier: "armedCell", value: "", color: priorityEventColor)
-                                }
-                            } else {
-                                if tableColumn?.identifier.rawValue == "openColumn" {
-                                    return generateCell(identifier: "openCell", value: startTime)
-                                } else if tableColumn?.identifier.rawValue == "closedColumn" {
-                                    return generateCell(identifier: "closedCell", value: endTime)
-                                } else if tableColumn?.identifier.rawValue == "disarmedColulmn" {
-                                    return generateCell(identifier: "disarmedCell", value: "")
-                                } else if tableColumn?.identifier.rawValue == "armedColumn" {
-                                    return generateCell(identifier: "armedCell", value: "")
-                                }
-                            }
+                        if tableColumn?.identifier.rawValue == "partitionTableNamesColumn"{
+                            return generateCell(identifier: "partitionTableNameCell", value: partition.name!)
+                        }
+                        if tableColumn?.identifier.rawValue == "partitionTableArmedColumn"{
+                            return generateCell(identifier: "partitionTableArmedCell", value: "")
                         }
                     }
                 }
-            } else if tableView == partitionsTableView {
-                if priorityHigh {
-                    if let partitions = accountDetailes.partitions {
-                        let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
-                        let partition = sortedPartitions[row]
-                        
-                        if partition.number == priorityEvent!.partition {
-                            if tableColumn?.identifier.rawValue == "partitionsTableNumberColumn"{
-                                return generateBackgroundColoredCell(identifier: "partitionTableNumberCell", value: String(partition.number), color: priorityEventColor)
-                            }
-                            if tableColumn?.identifier.rawValue == "partitionTableNamesColumn"{
-                                return generateBackgroundColoredCell(identifier: "partitionTableNameCell", value: partition.name!, color: priorityEventColor)
-                            }
-                            if tableColumn?.identifier.rawValue == "partitionTableArmedColumn"{
-                                return generateBackgroundColoredCell(identifier: "partitionTableArmedCell", value: "", color: priorityEventColor)
-                            }
-                        } else {
-                            if tableColumn?.identifier.rawValue == "partitionsTableNumberColumn"{
-                                return generateCell(identifier: "partitionTableNumberCell", value: String(partition.number))
-                            }
-                            if tableColumn?.identifier.rawValue == "partitionTableNamesColumn"{
-                                return generateCell(identifier: "partitionTableNameCell", value: partition.name!)
-                            }
-                            if tableColumn?.identifier.rawValue == "partitionTableArmedColumn"{
-                                return generateCell(identifier: "partitionTableArmedCell", value: "")
-                            }
+            }
+        } else if tableView == zonesTableView {
+            if selectedAccount != nil && priorityHigh! {
+                if let partitions = selectedAccount!.details!.partitions {
+                    let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
+                    var sortedZones: [ZoneEntity]?
+                    if priorityEventPartition == 0 {
+                        if let zones = sortedPartitions[partitionTableSelectedRow].zones {
+                            sortedZones = (zones.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity])
                         }
-                    }
-                }
-            } else if tableView == zonesTableView {
-                if priorityHigh {
-                    if let partitions = accountDetailes.partitions {
-                        let sortedPartitions = partitions.sortedArray(using: [numberSortDescriptor]) as! [PartitionEntity]
-                        var sortedZones: [ZoneEntity]?
-                        if priorityEventPartition == 0 {
-                            if let zones = sortedPartitions[partitionTableSelectedRow].zones {
-                                sortedZones = (zones.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity])
-                            }
-                        } else {
-                            for partition in sortedPartitions {
-                                if partition.number == priorityEventPartition {
-                                    if let zones = partition.zones {
-                                        sortedZones = (zones.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity])
-                                        break
-                                    }
+                    } else {
+                        for partition in sortedPartitions {
+                            if partition.number == priorityEventPartition {
+                                if let zones = partition.zones {
+                                    sortedZones = (zones.sortedArray(using: [numberSortDescriptor]) as! [ZoneEntity])
+                                    break
                                 }
                             }
                         }
-                        
-                        let zone = sortedZones![row]
-                        
-                        if zone.number == priorityEvent!.zoneOrUser && zone.number != 0 {
-                            if tableColumn?.identifier.rawValue == "zonesTableNumberColumn"{
-                                return generateBackgroundColoredCell(identifier: "zonesTableNumberCell", value: String(zone.number), color: priorityEventColor)
-                            }
-                            if tableColumn?.identifier.rawValue == "zonesTableNamesColumn"{
-                                return generateBackgroundColoredCell(identifier: "zonesTableNameCell", value: zone.name!, color: priorityEventColor)
-                            }
-                        } else {
-                            if tableColumn?.identifier.rawValue == "zonesTableNumberColumn"{
-                                return generateCell(identifier: "zonesTableNumberCell", value: String(zone.number))
-                            }
-                            if tableColumn?.identifier.rawValue == "zonesTableNamesColumn"{
-                                return generateCell(identifier: "zonesTableNameCell", value: zone.name!)
-                            }
+                    }
+                    
+                    let zone = sortedZones![row]
+                    
+                    if zone.number == selectedAccount!.priorityEvent!.zoneOrUser && zone.number != 0 {
+                        if tableColumn?.identifier.rawValue == "zonesTableNumberColumn"{
+                            return generateBackgroundColoredCell(identifier: "zonesTableNumberCell", value: String(zone.number), color: priorityEventColor!)
+                        }
+                        if tableColumn?.identifier.rawValue == "zonesTableNamesColumn"{
+                            return generateBackgroundColoredCell(identifier: "zonesTableNameCell", value: zone.name!, color: priorityEventColor!)
+                        }
+                    } else {
+                        if tableColumn?.identifier.rawValue == "zonesTableNumberColumn"{
+                            return generateCell(identifier: "zonesTableNumberCell", value: String(zone.number))
+                        }
+                        if tableColumn?.identifier.rawValue == "zonesTableNamesColumn"{
+                            return generateCell(identifier: "zonesTableNameCell", value: zone.name!)
                         }
                     }
                 }
-            } else if tableView == emiTableView {
-                if let emis = dspManager.storeData.getEmis() {
-                    let emi = emis[row]
-                    let color: CGColor = {
-                        if emi.active {
-                            return NSColor.systemGreen.cgColor
-                        } else { return NSColor.systemRed.cgColor}}()
-                    if tableColumn?.identifier.rawValue == "emiTableIdColumn" {
-                        return generateBackgroundColoredCell(identifier: "emiTableIdCell", value: emi.id!, color: color)
-                    } else if tableColumn?.identifier.rawValue == "emiTablePhoneColumn" {
-                        return generateBackgroundColoredCell(identifier: "emiTablePhoneCell", value: emi.phone!, color: color)
-                    } else if tableColumn?.identifier.rawValue == "emiTableDistancColumn" {
-                        return generateBackgroundColoredCell(identifier: "emiTableDistancCell", value: "", color: color)
-                    } else if tableColumn?.identifier.rawValue == "emiTableStatusDetailsColumn" {
-                        return generateBackgroundColoredCell(identifier: "emiTableStatusDetailsCell", value: emi.statusDetails!, color: color)
+            }
+        } else if tableView == emiTableView {
+            let emi = emis[row]
+            let color: CGColor = {
+                switch emi.status {
+                case "IN ACTION": return NSColor.systemRed.cgColor
+                case "AVAILABLE": return NSColor.systemGreen.cgColor
+                case "UNAVAILABLE": return NSColor.systemBlue.cgColor
+                default: return NSColor.black.cgColor
+                }
+            }()
+            if tableColumn?.identifier.rawValue == "emiTableIdColumn" {
+                return generateBackgroundColoredCell(identifier: "emiTableIdCell", value: emi.id!, color: color)
+            } else if tableColumn?.identifier.rawValue == "emiTablePhoneColumn" {
+                return generateBackgroundColoredCell(identifier: "emiTablePhoneCell", value: emi.phone!, color: color)
+            } else if tableColumn?.identifier.rawValue == "emiTableDistancColumn" {
+                return generateBackgroundColoredCell(identifier: "emiTableDistancCell", value: String(format: "%.3f", emi.distance), color: color)
+            } else if tableColumn?.identifier.rawValue == "emiTableStatusColumn" {
+                return generateBackgroundColoredCell(identifier: "emiTableStatusCell", value: emi.status!, color: color)
+            } else if tableColumn?.identifier.rawValue == "emiTableStatusDetailsColumn" {
+                return generateBackgroundColoredCell(identifier: "emiTableStatusDetailsCell", value: emi.statusDetails!, color: color)
+            }
+        } else if tableView == observationsTableView {
+            if selectedAccount != nil && priorityHigh! {
+                if let observations = selectedAccount!.details!.observations {
+                    let sortedObservations = observations.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
+                    let observation = sortedObservations[row]
+                    if tableColumn?.identifier.rawValue == "observationsTableColumn" {
+                        return generateCell(identifier: "observationsTableCell", value: observation.observation!)
                     }
                 }
-            } else if tableView == observationsTableView {
-                if priorityHigh {
-                    if let observations = accountDetailes.observations {
-                        let sortedObservations = observations.sortedArray(using: [dateSortDescriptor]) as! [ObservationsEntity]
-                        let observation = sortedObservations[row]
-                        if tableColumn?.identifier.rawValue == "observationsTableColumn" {
-                            return generateCell(identifier: "observationsTableCell", value: observation.observation!)
-                        }
+            }
+        } else if tableView == emiDetailsTableView {
+            if selectedAccount != nil && priorityHigh! {
+                if let emiDetails = selectedAccount!.details!.emiDetails {
+                    let sortedEmidetails = emiDetails.sortedArray(using: [dateSortDescriptor]) as! [EmiDetailesEntity]
+                    let emiDetail = sortedEmidetails[row]
+                    if tableColumn?.identifier.rawValue == "emiDetailsTableColumn" {
+                        return generateCell(identifier: "emiDetailsTableCell", value: emiDetail.detailes!)
                     }
                 }
-            } else if tableView == emiDetailsTableView {
-                if priorityHigh {
-                    if let emiDetails = accountDetailes.emiDetails {
-                        let sortedEmiDetails = emiDetails.sortedArray(using: [dateSortDescriptor]) as! [EmiDetailesEntity]
-                        let emiDetail = sortedEmiDetails[row]
-                        if tableColumn?.identifier.rawValue == "emiDetailsTableColumn" {
-                            return generateCell(identifier: "emiDetailsTableCell", value: emiDetail.detailes!)
-                        }
+            }
+        } else if tableView == actionDetailsTableView {
+            if selectedAccount != nil && priorityHigh! {
+                if let actionDetails = selectedAccount!.details!.actionDetailes {
+                    let descendingDateSortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+                    let sortedActionDetails = actionDetails.sortedArray(using: [descendingDateSortDescriptor]) as! [ActionDetailesEntity]
+                    let actionDetail = sortedActionDetails[row]
+                    if tableColumn?.identifier.rawValue == "actionDetailsTableDateColumn" {
+                        return generateCell(identifier: "actionDetailsTableDateCell", value: dateFormater.string(from: actionDetail.date! as Date))
+                    } else if tableColumn?.identifier.rawValue == "actionDetailsTableUserColumn" {
+                        return generateCell(identifier: "actionDetailsTableUserCell", value: actionDetail.user!)
+                    } else if tableColumn?.identifier.rawValue == "actionDetailsTableEmiColumn" {
+                        return generateCell(identifier: "actionDetailsTableEmiCell", value: actionDetail.emi!)
+                    } else if tableColumn?.identifier.rawValue == "actionDetailsTableSolutionColumn" {
+                        return generateCell(identifier: "actionDetailsTableSolutionCell", value: actionDetail.solution!)
+                    } else if tableColumn?.identifier.rawValue == "actionDetailsTableSolutionDetailsColumn" {
+                        return generateCell(identifier: "actionDetailsTableSolutionDetailsCell", value: actionDetail.detailes!)
                     }
                 }
-            } else if tableView == ticketsTableView {
-                if priorityHigh {
-                    if let tickets = accountDetailes.tickets {
-                        let sortedTickets = tickets.sortedArray(using: [dateSortDescriptor]) as! [TicketEntity]
-                        let ticket = sortedTickets[row]
-                        if tableColumn?.identifier.rawValue == "dateTicketsTableColumn" {
-                            return generateCell(identifier: "dateTicketsTableCell", value: dateFormater.string(from: ticket.date! as Date))
-                        } else if tableColumn?.identifier.rawValue == "numberTicketsTableColumn" {
-                            return generateCell(identifier: "numberTicketsTableCell", value: String(ticket.number))
-                        } else if tableColumn?.identifier.rawValue == "userTicketsTableColumn" {
-                            return generateCell(identifier: "userTicketsTableCell", value: ticket.user!)
-                        } else if tableColumn?.identifier.rawValue == "managerTicketsTableColumn" {
-                            return generateCell(identifier: "managerTicketsTableCell", value: ticket.manager!)
-                        } else if tableColumn?.identifier.rawValue == "typeTicketsTableColumn" {
-                            return generateCell(identifier: "typeTicketsTableCell", value: ticket.type!)
-                        } else if tableColumn?.identifier.rawValue == "statusTicketsTableColumn" {
-                            return generateCell(identifier: "statusTicketsTableCell", value: ticket.status!)
-                        } else if tableColumn?.identifier.rawValue == "detailsTicketsTableColumn" {
-                            return generateCell(identifier: "detailsTicketsTableCell", value: ticket.details!)
-                        }
+            }
+        } else if tableView == ticketsTableView {
+            if selectedAccount != nil && priorityHigh! {
+                if let tickets = selectedAccount!.details!.tickets {
+                    let sortedTickets = tickets.sortedArray(using: [dateSortDescriptor]) as! [TicketEntity]
+                    let ticket = sortedTickets[row]
+                    if tableColumn?.identifier.rawValue == "dateTicketsTableColumn" {
+                        return generateCell(identifier: "dateTicketsTableCell", value: dateFormater.string(from: ticket.date! as Date))
+                    } else if tableColumn?.identifier.rawValue == "numberTicketsTableColumn" {
+                        return generateCell(identifier: "numberTicketsTableCell", value: String(ticket.number))
+                    } else if tableColumn?.identifier.rawValue == "userTicketsTableColumn" {
+                        return generateCell(identifier: "userTicketsTableCell", value: ticket.user!)
+                    } else if tableColumn?.identifier.rawValue == "managerTicketsTableColumn" {
+                        return generateCell(identifier: "managerTicketsTableCell", value: ticket.manager!)
+                    } else if tableColumn?.identifier.rawValue == "typeTicketsTableColumn" {
+                        return generateCell(identifier: "typeTicketsTableCell", value: ticket.type!)
+                    } else if tableColumn?.identifier.rawValue == "statusTicketsTableColumn" {
+                        return generateCell(identifier: "statusTicketsTableCell", value: ticket.status!)
+                    } else if tableColumn?.identifier.rawValue == "detailsTicketsTableColumn" {
+                        return generateCell(identifier: "detailsTicketsTableCell", value: ticket.details!)
                     }
                 }
             }

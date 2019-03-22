@@ -21,19 +21,19 @@ class LoginVC: NSViewController {
     
 
     @IBOutlet weak var nameTextField: NSTextField!
-    @IBOutlet weak var passwordTextField: NSTextField!
+    @IBOutlet weak var passwordTextField: NSSecureTextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
     }
     
     override func viewWillAppear() {
+        
         self.view.window?.styleMask.remove(.closable)
         self.view.window?.styleMask.remove(.resizable)
     }
     
     @IBAction func loginButton(_ sender: NSButton) {
-        usersManager.addDefaultUser()
         if usersManager.userIsValid(name: nameTextField.stringValue, password: passwordTextField.stringValue) {
             UsersManager.activeUser = nameTextField.stringValue
             delegate!.accesGranted = true

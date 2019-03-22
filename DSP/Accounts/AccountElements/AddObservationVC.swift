@@ -21,12 +21,16 @@ class AddObservationVC: NSViewController {
     @IBOutlet weak var observationTextField: NSTextField!
     
     var editButtonPressed = false
-
+    var observation: ObservationsEntity?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         if editButtonPressed {
+            observation = delegate?.getObservation()
             addObservationButtonOutlet.title = "SAVE"
-            observationTextField.stringValue = delegate!.getObservation().observation!
+            if observation != nil {
+                observationTextField.stringValue = observation!.observation!
+            }
         }
     }
     override func viewDidAppear() {
@@ -35,7 +39,11 @@ class AddObservationVC: NSViewController {
     
     @IBAction func addObservationButton(_ sender: NSButton) {
         if editButtonPressed {
-            delegate?.getObservation().observation! = observationTextField.stringValue
+            if observation != nil {
+                observation!.observation! = observationTextField.stringValue
+                observation!.date = NSDate()
+                observation?.user = UsersManager.activeUser
+            }
         } else {
             delegate?.addObservation(observation: observationTextField.stringValue)
             observationTextField.stringValue = ""

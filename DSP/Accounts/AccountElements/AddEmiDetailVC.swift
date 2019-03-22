@@ -40,6 +40,8 @@ class AddEmiDetailVC: NSViewController {
     @IBAction func addDetailButton(_ sender: NSButton) {
         if editButtonPressed {
             emiDetail?.detailes = detailTextField.stringValue
+            emiDetail?.date = NSDate()
+            emiDetail?.user = UsersManager.activeUser
         } else {
             delegate?.addEmiDetail(detail: detailTextField.stringValue)
             detailTextField.stringValue = ""

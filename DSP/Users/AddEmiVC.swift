@@ -9,12 +9,13 @@
 import Cocoa
 
 protocol AddEmiVCDelegate {
-    func addEmi(id: String, phone: String, active: Bool, statusDetails: String, longitude: Double, latitude: Double)
+    func addEmi(id: String, phone: String, status: String, statusDetails: String, longitude: Double, latitude: Double)
     func getEmi() -> EmiEntity
+    func saveEmi()
 }
 
 class AddEmiVC: NSViewController, AddEmiLocationVCDelegate {    
-    
+    let dspAlert = DspAlert()
     var delegate: DSPViewController?
     
     var coordinate = (long: Double(), lat: Double())
@@ -24,10 +25,23 @@ class AddEmiVC: NSViewController, AddEmiLocationVCDelegate {
     @IBOutlet weak var statusButtonOutlet: NSPopUpButton!
     @IBOutlet weak var statusDetailsTextField: NSTextField!
     
+    @IBOutlet weak var addEmiButtonOutlet: NSButton!
     var editButtonPresed = false
 
+    var emi: EmiEntity?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        addEmiButtonOutlet.title = "SAVE"
+        if editButtonPresed {
+            emi = delegate?.getEmi()
+            if emi != nil {
+                idTextField.stringValue = emi!.id!
+                phoneTextField.stringValue = emi!.phone!
+                statusButtonOutlet.title = emi!.status!
+                statusDetailsTextField.stringValue = emi!.statusDetails!
+            }
+        }
     }
     
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
@@ -39,13 +53,25 @@ class AddEmiVC: NSViewController, AddEmiLocationVCDelegate {
     }
 
     @IBAction func addEmi(_ sender: NSButton) {
-        let active: Bool = {
-            guard self.statusButtonOutlet.title == "ACTIVE" else {
-                return false
+        if editButtonPresed {
+            guard emi != nil else { dspAlert.showAlert(message: "Cannot edit EMI"); return }
+            emi?.id = idTextField.stringValue
+            emi?.phone = phoneTextField.stringValue
+            emi?.status = statusButtonOutlet.titleOfSelectedItem
+            if emi?.status == "AVAILABLE" {
+                emi?.statusDetails = "WAITING"
             }
-            return true
-        }()
-        delegate!.addEmi(id: idTextField.stringValue, phone: phoneTextField.stringValue, active: active,
-                         statusDetails: statusDetailsTextField.stringValue, longitude: coordinate.long, latitude: coordinate.lat)
+            emi?.statusDetails = statusDetailsTextField.stringValue
+            emi?.latitude = coordinate.lat
+            emi?.longitude = coordinate.long
+            delegate?.saveEmi()
+        } else {
+            if statusButtonOutlet.titleOfSelectedItem == "AVAILABLE" {
+                statusDetailsTextField.stringValue = "WAITING"
+            }
+            delegate!.addEmi(id: idTextField.stringValue, phone: phoneTextField.stringValue, status: statusButtonOutlet.titleOfSelectedItem!,
+                             statusDetails: statusDetailsTextField.stringValue, longitude: coordinate.long, latitude: coordinate.lat)
+        }
     }
+    
 }
