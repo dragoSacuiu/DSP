@@ -45,37 +45,12 @@ extension Iprs {
         let textFiles = textFilesTools.getTextFromFile(from: iprsCSVLogFilesPath, fileType: "csv")
         if textFiles.count > 0 {
             for file in textFiles {
-                let fileName = file.FileName
-                let accountID = textFilesTools.cutFromTextLine(TextLine: fileName, From: 8, To: 12)
+                let accountID = textFilesTools.getAccountIdFromFileName(name: file.name, from: 8, to: 12)
                 if !delegate!.blackList.contains(accountID) {
                     let account = AccountEvents(id: accountID)
-                    let textLines = file.Content.components(separatedBy: "\n")
-                    for textLine in textLines {
-                        if textLine != "" {
-                            let splitTextEvent = textLine.components(separatedBy: ",")
-                            let eventName = textFilesTools.replaceCharInString(string: splitTextEvent[5], charToBeReplaced: "\"", with: "")
-                            let cidAndGroup = splitTextEvent[2].components(separatedBy: " ")
-                            let cid = cidAndGroup[1]
-                            let group = Int(cidAndGroup[0])!
-                            var partition = splitTextEvent[3]
-                            for _ in partition {
-                                let index = partition.index(partition.startIndex, offsetBy: 0)
-                                if partition[index] == "0" && partition.count > 1 {
-                                    partition.remove(at: index)
-                                } else {break}
-                            }
-                            var zoneOrUser = splitTextEvent[4]
-                            for _ in zoneOrUser {
-                                let index = zoneOrUser.index(zoneOrUser.startIndex, offsetBy: 0)
-                                if zoneOrUser[index] == "0" && zoneOrUser.count > 1 {
-                                    zoneOrUser.remove(at: index)
-                                } else {break}
-                            }
-                            let priority = getEventPriority(eventCode: Int(cid)!)
-                            let event = Event(priority: priority, date: NSDate(), cid: cid, eventName: eventName.uppercased(), partition: Int(partition)!, zoneOrUser: Int(zoneOrUser)!, group: group)
-                            account.events.append(event)
-                        }
-                    }
+                    let textLines = file.content.components(separatedBy: "\n")
+                    let events = createEventFromIprsCsvLogTextLine(textLines: textLines)
+                    account.events.append(contentsOf: events)
                     if account.events.count > 0 {
                         accountEvents.append(account)
                     }
@@ -97,6 +72,37 @@ extension Iprs {
         if !foundCid {
             return 88
         }
+    }
+    
+    private func createEventFromIprsCsvLogTextLine(textLines: [String]) -> [Event] {
+        var events = [Event]()
+        for textLine in textLines {
+            if textLine != "" {
+                let splitTextEvent = textLine.components(separatedBy: ",")
+                let eventName = textFilesTools.replaceCharInString(string: splitTextEvent[5], charToBeReplaced: "\"", with: "")
+                let cidAndGroup = splitTextEvent[2].components(separatedBy: " ")
+                let cid = cidAndGroup[1]
+                let group = Int(cidAndGroup[0])!
+                var partition = splitTextEvent[3]
+                for _ in partition {
+                    let index = partition.index(partition.startIndex, offsetBy: 0)
+                    if partition[index] == "0" && partition.count > 1 {
+                        partition.remove(at: index)
+                    } else {break}
+                }
+                var zoneOrUser = splitTextEvent[4]
+                for _ in zoneOrUser {
+                    let index = zoneOrUser.index(zoneOrUser.startIndex, offsetBy: 0)
+                    if zoneOrUser[index] == "0" && zoneOrUser.count > 1 {
+                        zoneOrUser.remove(at: index)
+                    } else {break}
+                }
+                let priority = getEventPriority(eventCode: Int(cid)!)
+                let event = Event(priority: priority, date: NSDate(), cid: cid, eventName: eventName.uppercased(), partition: Int(partition)!, zoneOrUser: Int(zoneOrUser)!, group: group)
+                events.append(event)
+            }
+        }
+        return events
     }
 }
 

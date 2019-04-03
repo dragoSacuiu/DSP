@@ -10,14 +10,14 @@ import Foundation
 
 class FilesTools {
     
-    func cutFromTextLine(TextLine: String, From: Int, To: Int) -> String {
-        let from = TextLine.index(TextLine.startIndex, offsetBy: From)
-        let to = TextLine.index(TextLine.startIndex, offsetBy: To)
-        let cutText = TextLine[from..<to]
+    func getAccountIdFromFileName(name: String, from: Int, to: Int) -> String {
+        let from = name.index(name.startIndex, offsetBy: from)
+        let to = name.index(name.startIndex, offsetBy: to)
+        let cutText = name[from..<to]
         return String(cutText)
     }
     
-    func getTextFromFile(from directoryPath: String, fileType fileExtention: String) -> [(FileName: String, Content: String)] {
+    func getTextFromFile(from directoryPath: String, fileType fileExtention: String) -> [(name: String, content: String)] {
         
         guard checkDirectoryExists(at: directoryPath) else {
             fatalError("No such directory at patch <\(directoryPath)>")
@@ -50,8 +50,8 @@ extension FilesTools {
         }
     }
     
-    private func getTextFromCSVFiles(path: String) -> [(FileName: String, Content: String)] {
-        var csvFiles = [(FileName: String, Content: String)]()
+    private func getTextFromCSVFiles(path: String) -> [(name: String, content: String)] {
+        var csvFiles = [(name: String, content: String)]()
         let fileManager = FileManager.default
         do {
             let files = try fileManager.contentsOfDirectory(atPath: path)
@@ -66,7 +66,7 @@ extension FilesTools {
                         file?.closeFile()
                         let textContent = String(data: content!, encoding: String.Encoding.utf8)
                         let csvFile = (FileName: fileName, Content: textContent)
-                        csvFiles.append(csvFile as! (FileName: String, Content: String))
+                        csvFiles.append(csvFile as! (name: String, content: String))
                     }
                 }
             }
