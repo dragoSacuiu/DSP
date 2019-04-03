@@ -15,26 +15,26 @@ protocol IprsReciverDelegate {
 class Iprs: ReciverProtocol {
     var delegate: IprsReciverDelegate?
     
-    var iprsCSVLogFilesPath = "/Volumes/home/iprs/201903"
-    var textFilesTools = FilesTools()
+    private var iprsCSVLogFilesPath = "/Volumes/home/iprs/201903"
+    private var textFilesTools = FilesTools()
     
-    let medicalAlarmCID    = (firstCode: 100, lastCode: 109, priority: 1)
-    let fireAlarmCID       = (firstCode: 110, lastCode: 119, priority: 2)
-    let panicAlarmCID      = (firstCode: 120, lastCode: 129, priority: 3)
-    let burglarAlarmCID    = (firstCode: 130, lastCode: 139, priority: 4)
-    let generalAlarmmCID   = (firstCode: 150, lastCode: 163, priority: 5)
-    let troubleCID         = (firstCode: 300, lastCode: 393, priority: 6)
-    let openCloseCID       = (firstCode: 400, lastCode: 466, priority: 7)
-    let testCID            = (firstCode: 601, lastCode: 616, priority: 8)
-    let fireSupervisoryCID = (firstCode: 200, lastCode: 206, priority: 9)
-    let protectionLoopCID  = (firstCode: 371, lastCode: 378, priority: 10)
-    let sensorCID          = (firstCode: 380, lastCode: 385, priority: 11)
-    let systemAccesCID     = (firstCode: 411, lastCode: 434, priority: 12)
-    let disablesCID        = (firstCode: 501, lastCode: 553, priority: 13)
-    let bypassCID          = (firstCode: 570, lastCode: 579, priority: 14)
-    let eventLogCID        = (firstCode: 621, lastCode: 628, priority: 15)
-    let scheduleCID        = (firstCode: 630, lastCode: 632, priority: 16)
-    let miscelaneousCID    = (firstCode: 654, lastCode: 962, priority: 17)
+    private let medicalAlarmCID    = (firstCode: 100, lastCode: 109, priority: 1)
+    private let fireAlarmCID       = (firstCode: 110, lastCode: 119, priority: 2)
+    private let panicAlarmCID      = (firstCode: 120, lastCode: 129, priority: 3)
+    private let burglarAlarmCID    = (firstCode: 130, lastCode: 139, priority: 4)
+    private let generalAlarmmCID   = (firstCode: 150, lastCode: 163, priority: 5)
+    private let troubleCID         = (firstCode: 300, lastCode: 393, priority: 6)
+    private let openCloseCID       = (firstCode: 400, lastCode: 466, priority: 7)
+    private let testCID            = (firstCode: 601, lastCode: 616, priority: 8)
+    private let fireSupervisoryCID = (firstCode: 200, lastCode: 206, priority: 9)
+    private let protectionLoopCID  = (firstCode: 371, lastCode: 378, priority: 10)
+    private let sensorCID          = (firstCode: 380, lastCode: 385, priority: 11)
+    private let systemAccesCID     = (firstCode: 411, lastCode: 434, priority: 12)
+    private let disablesCID        = (firstCode: 501, lastCode: 553, priority: 13)
+    private let bypassCID          = (firstCode: 570, lastCode: 579, priority: 14)
+    private let eventLogCID        = (firstCode: 621, lastCode: 628, priority: 15)
+    private let scheduleCID        = (firstCode: 630, lastCode: 632, priority: 16)
+    private let miscelaneousCID    = (firstCode: 654, lastCode: 962, priority: 17)
     
 }
 
@@ -85,7 +85,7 @@ extension Iprs {
         return accountEvents
     }
     
-    func getEventPriority(eventCode: Int) -> Int {
+    private func getEventPriority(eventCode: Int) -> Int {
         let cidCodes = [medicalAlarmCID, fireAlarmCID, panicAlarmCID, burglarAlarmCID, generalAlarmmCID, troubleCID, openCloseCID, testCID, fireSupervisoryCID, protectionLoopCID, sensorCID, systemAccesCID, disablesCID, bypassCID, eventLogCID, scheduleCID, miscelaneousCID]
         var foundCid = false
         for cid in cidCodes {

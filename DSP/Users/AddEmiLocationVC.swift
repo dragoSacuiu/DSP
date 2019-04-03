@@ -15,15 +15,15 @@ protocol AddEmiLocationVCDelegate {
 }
 
 class AddEmiLocationVC: NSViewController, CLLocationManagerDelegate, NSSearchFieldDelegate, MKMapViewDelegate {
-    let dspAlert = DspAlert()
+    private let dspAlert = DspAlert()
     var delegate: AddEmiLocationVCDelegate?
     
-    let locationManager = CLLocationManager()
-    let bucharestCenterCoordinate = CLLocationCoordinate2D(latitude: 44.42676678769212 ,longitude: 26.10243551496884)
-    let areaSpan = MKCoordinateSpan(latitudeDelta: 0.10, longitudeDelta: 0.10)
+    private let locationManager = CLLocationManager()
+    private let bucharestCenterCoordinate = CLLocationCoordinate2D(latitude: 44.42676678769212 ,longitude: 26.10243551496884)
+    private let areaSpan = MKCoordinateSpan(latitudeDelta: 0.10, longitudeDelta: 0.10)
     
     @IBOutlet weak var mapView: MKMapView!
-    var annotation = MKPointAnnotation()
+    private var annotation = MKPointAnnotation()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,7 +32,7 @@ class AddEmiLocationVC: NSViewController, CLLocationManagerDelegate, NSSearchFie
         setMapRegion(coordinate: bucharestCenterCoordinate, span: areaSpan)
     }
     
-    func setMapRegion(coordinate: CLLocationCoordinate2D, span: MKCoordinateSpan) {
+    private func setMapRegion(coordinate: CLLocationCoordinate2D, span: MKCoordinateSpan) {
         let region = MKCoordinateRegion(center: coordinate, span: span)
         mapView.region = region
     }

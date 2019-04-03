@@ -9,8 +9,8 @@
 import Foundation
 
 class UsersManager {
-    let dspAlert = DspAlert()
-    let storeUsers = StoreUsers()
+    private let dspAlert = DspAlert()
+    private let storeUsers = StoreUsers()
     static var activeUser = String()
     
     func userIsValid(name: String, password: String) -> Bool {

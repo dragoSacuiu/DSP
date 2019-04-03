@@ -21,7 +21,7 @@ class AddObservationVC: NSViewController {
     @IBOutlet weak var observationTextField: NSTextField!
     
     var editButtonPressed = false
-    var observation: ObservationsEntity?
+    private var observation: ObservationsEntity?
     
     override func viewDidLoad() {
         super.viewDidLoad()

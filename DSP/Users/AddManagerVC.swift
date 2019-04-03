@@ -18,7 +18,7 @@ class AddManagerVC: NSViewController {
     var delegate: UsersVC?
     
     var editButtonPressed = false
-    var manager: ManagerEntity?
+    private var manager: ManagerEntity?
 
     @IBOutlet weak var nameTextField: NSTextField!
     @IBOutlet weak var emailTextField: NSTextField!
@@ -44,7 +44,7 @@ class AddManagerVC: NSViewController {
             clearTextFields()
         }
     }
-    func clearTextFields() {
+    private func clearTextFields() {
         nameTextField.stringValue = ""
         emailTextField.stringValue = ""
         nameTextField.becomeFirstResponder()

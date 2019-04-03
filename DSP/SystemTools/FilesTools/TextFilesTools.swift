@@ -19,7 +19,7 @@ class FilesTools {
     
     func getTextFromFile(from directoryPath: String, fileType fileExtention: String) -> [(FileName: String, Content: String)] {
         
-        guard ifDirectoryExists(at: directoryPath) else {
+        guard checkDirectoryExists(at: directoryPath) else {
             fatalError("No such directory at patch <\(directoryPath)>")
         }
         
@@ -36,12 +36,12 @@ class FilesTools {
 
 extension FilesTools {
     
-    func ifDirectoryExists(at path: String) -> Bool {
+    private func checkDirectoryExists(at path: String) -> Bool {
         let fileManager = FileManager.default
         return fileManager.fileExists(atPath: path)
     }
     
-    func emptyTextFile(path: String) {
+    private func emptyTextFile(path: String) {
         let emptyString = ""
         do {
             try emptyString.write(toFile: path, atomically: false, encoding: String.Encoding.utf8)
@@ -50,7 +50,7 @@ extension FilesTools {
         }
     }
     
-    func getTextFromCSVFiles(path: String) -> [(FileName: String, Content: String)] {
+    private func getTextFromCSVFiles(path: String) -> [(FileName: String, Content: String)] {
         var csvFiles = [(FileName: String, Content: String)]()
         let fileManager = FileManager.default
         do {
@@ -62,7 +62,7 @@ extension FilesTools {
                     
                     if file != nil {
                         let content = file?.readDataToEndOfFile()
-                        //emptyTextFile(path: filePath)
+                        emptyTextFile(path: filePath)
                         file?.closeFile()
                         let textContent = String(data: content!, encoding: String.Encoding.utf8)
                         let csvFile = (FileName: fileName, Content: textContent)

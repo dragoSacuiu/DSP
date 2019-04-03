@@ -154,6 +154,16 @@ extension DspStoreData {
         return 0
     }
     
+    func getManagers() -> [ManagerEntity] {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "ManagerEntity")
+        do {
+            return try managedObjectContext.fetch(fetchRequest) as! [ManagerEntity]
+        } catch  {
+            dspAlert.showAlert(message: "Can't get managers list from database")
+        }
+        return []
+    }
+    
     func getEmi(selectedEmiIndex: Int) -> EmiEntity? {
         let emis = getEmis()
         return emis![selectedEmiIndex]
@@ -176,9 +186,23 @@ extension DspStoreData {
         managedObjectContext.delete(account)
     }
     
+    
     func deleteEmi(emi: EmiEntity) {
         managedObjectContext.delete(emi)
         saveContext()
+    }
+
+    func deleteActions() {
+        let fechRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "ActionDetailesEntity")
+        do {
+            let x = try managedObjectContext.fetch(fechRequest) as! [ActionDetailesEntity]
+            for y in x {
+                managedObjectContext.delete(y)
+            }
+            saveContext()
+        } catch  {
+            print("")
+        }
     }
     
     func saveContext() {

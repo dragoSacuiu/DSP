@@ -15,7 +15,8 @@ protocol ReciverProtocol {
 class ReciversManager: IprsReciverDelegate {
     var blackList = [String]()
 
-    var iprsReciver = Iprs()
+    private var iprsReciver = Iprs()
+    
     init() {
         iprsReciver.delegate = self
     }

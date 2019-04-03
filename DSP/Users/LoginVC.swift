@@ -16,8 +16,8 @@ protocol LoginVCDelegate {
 class LoginVC: NSViewController {
     
     var delegate: DSPViewController?
-    let usersManager = UsersManager()
-    let dspAlert = DspAlert()
+    private let usersManager = UsersManager()
+    private let dspAlert = DspAlert()
     
 
     @IBOutlet weak var nameTextField: NSTextField!
@@ -28,7 +28,6 @@ class LoginVC: NSViewController {
     }
     
     override func viewWillAppear() {
-        
         self.view.window?.styleMask.remove(.closable)
         self.view.window?.styleMask.remove(.resizable)
     }

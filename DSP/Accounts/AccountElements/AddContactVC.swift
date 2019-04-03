@@ -27,7 +27,7 @@ class AddContactVC: NSViewController {
     
     @IBOutlet weak var addContactButtonOutlet: NSButton!
     
-    var contact: ContactEntity?
+    private var contact: ContactEntity?
     var editButtonWasPressed = false
 
     override func viewDidLoad() {
@@ -59,7 +59,7 @@ class AddContactVC: NSViewController {
         }
         delegate?.reloadContactstableView()
     }
-    func editContact() {
+    private func editContact() {
         contact?.priority = Int16(priorityTextField.stringValue)!
         contact?.name = nameTextField.stringValue
         contact?.userNumber = Int16(userNrTextField.stringValue)!
@@ -69,7 +69,7 @@ class AddContactVC: NSViewController {
         contact?.observations = observationTextField.stringValue
     }
     
-    func clearFields() {
+    private func clearFields() {
         self.nameTextField.stringValue = ""
         self.priorityTextField.stringValue = ""
         self.userNrTextField.stringValue = ""

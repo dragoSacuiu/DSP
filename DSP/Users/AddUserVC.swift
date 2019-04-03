@@ -14,7 +14,7 @@ protocol AddUserVCDelegate {
 }
 
 class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
-    let dspAlert = DspAlert()
+    private let dspAlert = DspAlert()
     var delegate: UsersVC?
     
     @IBOutlet weak var addButtonOutlet: NSButton!
@@ -23,7 +23,7 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
     @IBOutlet weak var passwordTextField: NSSecureTextField!
     @IBOutlet weak var confirmPasswordTextField: NSSecureTextField!
     
-    var user: UserEntity?
+    private var user: UserEntity?
     var editButtonPressed = false
     var accesGranted = false
 
@@ -61,7 +61,7 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
         return user!
     }
     
-    func passwordMach() -> Bool {
+    private func passwordMach() -> Bool {
         if passwordTextField.stringValue == confirmPasswordTextField.stringValue {
             return true
         } else {
@@ -70,7 +70,7 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
         }
     }
     
-    func allFieldsAreFill() -> Bool {
+    private func allFieldsAreFill() -> Bool {
         if nameTextField.stringValue != "" && passwordTextField.stringValue != "" && confirmPasswordTextField.stringValue != "" {
             return true
         } else {
@@ -83,7 +83,7 @@ class AddUserVC: NSViewController, UserPAsswordConfirmationVCDelegate {
         nameTextField.stringValue = user!.name!
     }
     
-    func clearFields() {
+    private func clearFields() {
         confirmPasswordTextField.stringValue = ""
         passwordTextField.stringValue = ""
         nameTextField.stringValue = ""

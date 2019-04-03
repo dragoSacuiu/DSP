@@ -16,7 +16,7 @@ class SolutionVC: NSViewController {
     
     var delegate: DSPViewController?
     
-    let dspAlert = DspAlert()
+    private let dspAlert = DspAlert()
     
     @IBOutlet weak var selectSolutionButton: NSPopUpButton!
     @IBOutlet weak var solutionDetailsTextField: NSTextField!

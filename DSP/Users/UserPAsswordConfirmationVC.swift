@@ -15,9 +15,9 @@ protocol UserPAsswordConfirmationVCDelegate {
 }
 
 class UserPAsswordConfirmationVC: NSViewController {
-    let dspAlert = DspAlert()
+    private let dspAlert = DspAlert()
     
-    var user: UserEntity?
+    private var user: UserEntity?
     var delegate: AddUserVC?
 
     @IBOutlet weak var passwordConfirmationTextField: NSSecureTextField!

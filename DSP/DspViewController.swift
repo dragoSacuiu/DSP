@@ -11,43 +11,44 @@ import MapKit
 import CoreLocation
 
 class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesizerDelegate, DspVCDelegate, LoginVCDelegate {
-    var narator = NSSpeechSynthesizer()
-    var dspManager = DspManager()
-    let mapManager = MapManager()
-    let dspAlert = DspAlert()
+    private let narator = NSSpeechSynthesizer()
+    private let dspManager = DspManager()
+    private let mapManager = MapManager()
+    private let email = SendEmail()
+    private let dspAlert = DspAlert()
     
     var accesGranted = false
     
-    let dateFormater = DateFormatter()
+    private let dateFormater = DateFormatter()
     
-    let locationManager = CLLocationManager()
+    private let locationManager = CLLocationManager()
+     
+    private var priorityEventPartition = 0
+    private var accountTableSelectedRow = 0
+    private var partitionTableSelectedRow = 0
+    private var emiTableSelectedRow = 0
     
-    var priorityEventPartition = 0
-    var accountTableSelectedRow = 0
-    var partitionTableSelectedRow = 0
-    var emiTableSelectedRow = 0
+    private var emis = [EmiEntity]()
+    private var selectedEmi: EmiEntity?
+    private var selectedEmiCLCoordinate: CLLocationCoordinate2D?
+    private var selectedEmiCLLocation: CLLocation?
     
-    var emis = [EmiEntity]()
-    var selectedEmi: EmiEntity?
-    var selectedEmiCLCoordinate: CLLocationCoordinate2D?
-    var selectedEmiCLLocation: CLLocation?
-    
-    enum emiStatus: String {
+    private  enum emiStatus: String {
         case available = "AVAILABLE"
         case unavailable = "UNAVAILABLE"
         case inAction = "IN ACTION"
         case waiting = "WAITING"
     }
     
-    var selectedAccount: AccountEvents?
-    var priorityEventType: EventType?
-    var priorityEventColor: CGColor?
-    var priorityHigh: Bool?
-    var selectedAccountCLCoordinate: CLLocationCoordinate2D?
-    var selectedAccountCLLocation: CLLocation?
+    private var selectedAccount: AccountEvents?
+    private var priorityEventType: EventType?
+    private var priorityEventColor: CGColor?
+    private var priorityHigh: Bool?
+    private var selectedAccountCLCoordinate: CLLocationCoordinate2D?
+    private var selectedAccountCLLocation: CLLocation?
     
     let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
-    let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: true)
+    let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: false)
     
     @IBOutlet weak var mapView: MKMapView!
     
@@ -71,8 +72,8 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         login()
         dspManager.dspVCDelegate = self
         mapView.delegate = self
-        mapManager.setDefault(map: mapView)
         narator.delegate = self
+        mapManager.setDefault(map: mapView)
         emis = dspManager.getEmis()
         dateFormater.dateStyle = .short
         dateFormater.timeStyle = .short
@@ -94,7 +95,7 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         return renderer
     }
     
-    func login() {
+    private func login() {
         let mainStoryBoard = NSStoryboard(name: "Main", bundle: nil)
         let loginVC = mainStoryBoard.instantiateController(withIdentifier: "loginVC") as! LoginVC
         loginVC.delegate = self
@@ -118,12 +119,12 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         }
     }
     
-    func activate() {
+    private func activate() {
         activateButtonOutlet.title = "DEACTIVATE                         "
         dspManager.run(getEventsTimeInterval: 3.0)
     }
     
-    func deactivate() {
+    private func deactivate() {
         activateButtonOutlet.title = "ACTIVATE                           "
         dspManager.stop()
     }
@@ -138,7 +139,7 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         }
     }
     
-    func generateAlarm(account: AccountEvents) {
+    private func generateAlarm(account: AccountEvents) {
         NSSound(named: "Glass")?.play()
         if account.priorityEvent!.priority < 7 {
             narator.startSpeaking(account.priorityEvent!.name)
@@ -162,8 +163,8 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
     @IBAction func notifyClientButton(_ sender: NSButton) {
         
     }
-    
-    @IBAction func addServiceMode(_ sender: NSButton) {
+
+    @IBAction func serviceModeButton(_ sender: NSButton) {
         dspManager.addToServiceMode(index: accountTableSelectedRow)
         cancelAlarm()
     }
@@ -172,6 +173,8 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         if let event = selectedAccount?.priorityEvent {
             if event.priority == 6 {
                 dspManager.storeData.storeTicket(account: selectedAccount!.details!, content: event.name)
+                let message = "Event: \(event.name) partition: \(event.partition) zone/user: \(event.zoneOrUser)"
+                emailTicket(message: message)
                 actionDetailsTableView.reloadData()
                 ticketsTableView.reloadData()
             } else {
@@ -180,20 +183,30 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         }
     }
     
-    func sendEmi(emi: EmiEntity) {
-        guard selectedAccount?.emi == nil else { dspAlert.showAlert(message: "Already sent EMI with ID: \(selectedAccount!.emi!.id!)"); return }
-        guard emi.status == emiStatus.available.rawValue else { dspAlert.showAlert(message: "EMI with ID: \(emi.id!) isn't avaialable!"); return }
+    private func emailTicket(message: String) {
+        let managers = dspManager.storeData.getManagers()
+        for manager in managers {
+            if manager.name == selectedAccount?.details?.manager {
+                let subject = "DSP: QUICK TICKET FOR: \(selectedAccount!.details!.objective!)"
+                email.sendTicket(emails: [manager.email!], subject: subject, account: selectedAccount!.details!, message: message)
+            }
+        }
+    }
+    
+    private func sendEmi(emi: EmiEntity) {
+        guard selectedAccount?.emi == nil else { dspAlert.showAlert(message: "Already sent SECURITY: \(selectedAccount!.emi!.id!)"); return }
+        guard emi.status == emiStatus.available.rawValue else { dspAlert.showAlert(message: "SECURITY ID: \(emi.id!) isn't avaialable!"); return }
         selectedAccount?.emi = emi
         selectedEmi?.status = emiStatus.inAction.rawValue
         selectedEmi?.statusDetails = "SENT TO: \(selectedAccount!.details!.objective!) FOR: \(selectedAccount!.priorityEvent!.name)"
-        dspManager.storeData.storeActionDetails(account: selectedAccount!.details!, emiId: selectedEmi!.id!, solution: "SENT EMI", details: selectedAccount!.priorityEvent!.name)
+        dspManager.storeData.storeActionDetails(account: selectedAccount!.details!, emiId: selectedEmi!.id!, solution: "SENT SECURITY", details: selectedAccount!.priorityEvent!.name)
         mapManager.calculatingRout(map: mapView, source: selectedEmiCLCoordinate!, destination: selectedAccountCLCoordinate!)
         sortEmi()
         emiTableView.reloadData()
         actionDetailsTableView.reloadData()
     }
     
-    func cancelEmi() {
+    private func cancelEmi() {
         if let emi = selectedAccount?.emi {
             emi.status = emiStatus.available.rawValue
             emi.statusDetails = emiStatus.waiting.rawValue
@@ -204,7 +217,7 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         }
     }
 
-    func resetDspInterface() {
+    private func resetDspInterface() {
         reloadTableViewData()
         let annotations = mapView.annotations
         let overLays = mapView.overlays
@@ -221,19 +234,17 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         resetDspInterface()
     }
     
-    func cancelAlarm() {
+    private func cancelAlarm() {
         if dspManager.accountsEvents.count != 0 {
             dspManager.accountsEvents.remove(at: accountTableSelectedRow)
-            if dspManager.accountsEvents.count != 0 {
-                accountTableSelectedRow = 0
-                setSelectedAccount(account: dspManager.accountsEvents[accountTableSelectedRow])
-            } else { selectedAccount = nil }
-        }
+            accountTableSelectedRow = 0
+            setSelectedAccount(account: dspManager.accountsEvents[accountTableSelectedRow])
+        } else { selectedAccount = nil }
         resetDspInterface()
         eventAlertImage.image = nil
     }
     
-    func setSelectedAccount(account: AccountEvents) {
+    private func setSelectedAccount(account: AccountEvents) {
         selectedAccount = account
         priorityEventType = dspManager.getEventType(event: selectedAccount!.priorityEvent!)
         priorityEventColor = priorityEventType!.color
@@ -247,22 +258,22 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         mapManager.showItemOnMap(map: mapView, name: selectedAccount!.details!.objective! ,coordinate: selectedAccountCLCoordinate!)
     }
     
-    func setSelectedEmi(emi: EmiEntity) {
+    private func setSelectedEmi(emi: EmiEntity) {
         selectedEmi = emi
         selectedEmiCLCoordinate = CLLocationCoordinate2D(latitude: emi.latitude, longitude: emi.longitude)
         selectedEmiCLLocation = CLLocation(latitude: emi.latitude, longitude: emi.longitude)
         mapManager.showItemOnMap(map: mapView, name: emis[emiTableSelectedRow].id!, coordinate: selectedEmiCLCoordinate!)
     }
     
-    func showSelectedEmiOnMap() {
+    private func showSelectedEmiOnMap() {
         mapManager.showItemOnMap(map: mapView, name: selectedEmi!.id!, coordinate: selectedEmiCLCoordinate!)
     }
     
-    func showSelectedAccountOnMap() {
+    private func showSelectedAccountOnMap() {
         mapManager.showItemOnMap(map: mapView, name: selectedAccount!.details!.objective!, coordinate: selectedAccountCLCoordinate!)
     }
     
-    func sortEmi() {
+    private func sortEmi() {
         for emi in emis {
             let emiCLLocation = CLLocation(latitude: emi.latitude, longitude: emi.longitude)
             emi.distance = mapManager.calculateDistance(map: mapView, source: emiCLLocation, destination: selectedAccountCLLocation!)
@@ -282,6 +293,10 @@ class DSPViewController: NSViewController, MKMapViewDelegate, NSSpeechSynthesize
         emiTableView.reloadData()
     }
 
+    @IBAction func removeAction(_ sender: NSButton) {
+        dspManager.storeData.deleteActions()
+        actionDetailsTableView.reloadData()
+    }
 }
 
 extension DSPViewController: AddEmiVCDelegate, ServiceModeVCDelegate, SolutionVCDelegate {
@@ -570,7 +585,7 @@ extension DSPViewController: NSTableViewDelegate, NSTableViewDataSource {
                     return generateBackgroundColoredCell(identifier: "accountDetailesTechnicCell", value: selectedAccount!.details!.technic!, color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesArmed" {
-                    return generateBackgroundColoredCell(identifier: "accountDetailesArmedCell", value: "Yes", color: priorityEventColor!)
+                    return generateBackgroundColoredCell(identifier: "accountDetailesArmedCell", value: "", color: priorityEventColor!)
                     
                 } else if tableColumn?.identifier.rawValue == "accountDetailesSystem" {
                     return generateBackgroundColoredCell(identifier: "accountDetailesSystemCell", value: selectedAccount!.details!.system!, color: priorityEventColor!)

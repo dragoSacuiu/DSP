@@ -15,13 +15,13 @@ protocol AddAccountLocationVCDelegate {
 }
 
 class AddAccountLocationVC: NSViewController, CLLocationManagerDelegate, NSSearchFieldDelegate, MKMapViewDelegate {
-    let dspAlert = DspAlert()
+    private let dspAlert = DspAlert()
     var delegate: AddAccountLocationVCDelegate?
     
-    let locationManager = CLLocationManager()
+    private let locationManager = CLLocationManager()
     
     @IBOutlet weak var mapView: MKMapView!
-    var annotation = MKPointAnnotation()
+    private var annotation = MKPointAnnotation()
     
     override func viewDidLoad() {
         super.viewDidLoad()

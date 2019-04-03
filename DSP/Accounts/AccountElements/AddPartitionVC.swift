@@ -18,7 +18,7 @@ class AddPartitionVC: NSViewController {
     var delegate: AddPartitionVCDelegate?
     
     var editButtonPressed = false
-    var partition: PartitionEntity?
+    private var partition: PartitionEntity?
 
     @IBOutlet weak var partitionNameTextField: NSTextField!
     @IBOutlet weak var partitionNumberTextField: NSTextField!
@@ -49,7 +49,7 @@ class AddPartitionVC: NSViewController {
         delegate?.reloadPartitionsTableView()
     }
     
-    func clearFields() {
+    private func clearFields() {
         partitionNameTextField.stringValue = ""
         partitionNumberTextField.stringValue = ""
         partitionNameTextField.becomeFirstResponder()

@@ -18,27 +18,27 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
     
     var delegate: AddAcccountVCDelegate?
     
-    let storeAccount = UserStoreData()
-    let dateFormater = DateFormatter()
-    let dspAlert = DspAlert()
+    private let storeAccount = UserStoreData()
+    private let dateFormater = DateFormatter()
+    private let dspAlert = DspAlert()
     
-    var managers: [ManagerEntity]?
-    var zones = [ZoneEntity]()
-    var longitude = Double()
-    var latitude = Double()
+    private var managers: [ManagerEntity]?
+    private var zones = [ZoneEntity]()
+    private var longitude = Double()
+    private var latitude = Double()
     
-    var editMode = false
+    private var editMode = false
     
-    let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
-    let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: true)
-    let priorityDescriptor = NSSortDescriptor(key: "priority", ascending: true)
+    private let numberSortDescriptor = NSSortDescriptor(key: "number", ascending: true)
+    private let dateSortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+    private let priorityDescriptor = NSSortDescriptor(key: "priority", ascending: true)
     
-    var partirionsTableViewSelectedRow = 0
-    var zonesTableViewselectedRow = 0
-    var contactsTableViewSelectedRow = 0
-    var emiDetailsTableViewselectedRow = 0
-    var observationsTableViewselectedRow = 0
-    var ticketsTableViewSelectedRow = 0
+    private var partirionsTableViewSelectedRow = 0
+    private var zonesTableViewselectedRow = 0
+    private var contactsTableViewSelectedRow = 0
+    private var emiDetailsTableViewselectedRow = 0
+    private var observationsTableViewselectedRow = 0
+    private var ticketsTableViewSelectedRow = 0
 
     @IBOutlet weak var accountIdTextField: NSTextField!
     @IBOutlet weak var objectiveTextField: NSTextField!
@@ -79,7 +79,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
     @IBOutlet weak var observationsTableView: NSTableView!
     @IBOutlet weak var ticketsTableView: NSTableView!
     
-    lazy var textFields: [NSTextField] = {
+    private lazy var textFields: [NSTextField] = {
         return [objectiveTextField,clientTextField,objectiveTypeTextField,salesTextField,contractTextField,adress1TextField,adress2TextField,
                 countyTextField,cityTextField,technicTextField,systemTextField,comunicatorTextField,longitudeTextField,latitudeTextField]
     }()
@@ -108,7 +108,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         storeAccount.managedObjectContext.reset()
     }
    
-    func createAccount() {
+    private func createAccount() {
         if accoutIsValid && allFieldsAreFill && periodicTest != nil {
             storeAccount.account!.id = accountIdTextField.stringValue
             storeAccount.account!.objective = objectiveTextField.stringValue
@@ -195,7 +195,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
     }
     
     
-    lazy var periodicTest: String? = {
+    private lazy var periodicTest: String? = {
         let periodicTestButtons = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
         for periodicTestButton in periodicTestButtons {
             if periodicTestButton!.state == .on {
@@ -205,7 +205,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         return nil
     }()
     
-    lazy var status: String? = {
+    private lazy var status: String? = {
         let statusButtons = [activStatus, notActivStatus, suspendedStatus, terminatedStatus]
         for statusButton in statusButtons {
             if statusButton?.state == .on {
@@ -215,7 +215,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         return nil
     }()
     
-    func selectPeriodicTest(periodicTest: String) {
+    private func selectPeriodicTest(periodicTest: String) {
         let periodicTestOutlets = [test24HOutlet, test12HOutlet, test6HOutlet, test3HOutlet]
         for test in periodicTestOutlets {
             if test?.title == periodicTest {
@@ -224,7 +224,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         }
     }
     
-    func selectStatus(status: String) {
+    private func selectStatus(status: String) {
         let statusButtons = [activStatus, notActivStatus, suspendedStatus, terminatedStatus]
         for statusButton in statusButtons {
             if statusButton?.title == status {
@@ -233,7 +233,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         }
     }
     
-    func displayAccount() {
+    private func displayAccount() {
         if let location = storeAccount.account!.location {
             longitude = location.longitude
             latitude = location.latitude
@@ -260,7 +260,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         reloadTablesViewData()
     }
     
-    lazy var accoutIsValid: Bool = {
+    private lazy var accoutIsValid: Bool = {
         guard accountIdIsValid else {
             guard allFieldsAreFill else {
                 return false
@@ -270,7 +270,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         return true
     }()
     
-    lazy var accountIdIsValid: Bool = {
+    private lazy var accountIdIsValid: Bool = {
         let validIdCharacters = "0123456789ABCDEF"
         for char in accountIdTextField.stringValue {
             guard validIdCharacters.contains(char) && accountIdTextField.stringValue.count == 4 else {
@@ -281,7 +281,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         return true
     }()
     
-    lazy var allFieldsAreFill: Bool = {
+    private lazy var allFieldsAreFill: Bool = {
         for textField in textFields {
             guard textField.stringValue != "" else {
                 dspAlert.showAlert(message: "Please fill all fields!")
@@ -291,7 +291,7 @@ class AddAccountViewController: NSViewController, AddTicketVCDelegate {
         return true
     }()
     
-    func clearWindowData() {
+    private func clearWindowData() {
         for textField in textFields {
             textField.stringValue = ""
         }

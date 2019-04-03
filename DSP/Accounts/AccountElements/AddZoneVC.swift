@@ -17,7 +17,7 @@ protocol AddZoneVCDelegate {
 class AddZoneVC: NSViewController {
     var delegate: AddZoneVCDelegate?
     
-    var zone: ZoneEntity?
+    private var zone: ZoneEntity?
     var editButtonPressed = false
     
     @IBOutlet weak var addButtonOutlet: NSButton!
@@ -48,7 +48,7 @@ class AddZoneVC: NSViewController {
         delegate?.reloadZonesTableView()
     }
 
-    func clearFields() {
+    private func clearFields() {
         zoneNameTextField.stringValue = ""
         zoneNumberTextField.stringValue = ""
         zoneNameTextField.becomeFirstResponder()

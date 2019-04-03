@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="wb4-Un-kJC">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="wb4-Un-kJC">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
-        <plugIn identifier="com.apple.MapKitIBPlugin" version="14460.31"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.MapKitIBPlugin" version="14490.70"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -27,10 +27,10 @@
             </objects>
             <point key="canvasLocation" x="-695" y="-695"/>
         </scene>
-        <!--AddAccountVC-->
+        <!--ADD / EDIT ACCOUNT-->
         <scene sceneID="bs8-5g-6Na">
             <objects>
-                <viewController title="AddAccountVC" storyboardIdentifier="AddAccountViewController" showSeguePresentationStyle="single" id="DKo-r9-S6N" customClass="AddAccountViewController" customModule="DSP" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="ADD / EDIT ACCOUNT" storyboardIdentifier="AddAccountViewController" showSeguePresentationStyle="single" id="DKo-r9-S6N" customClass="AddAccountViewController" customModule="DSP" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="eg4-tC-nRH">
                         <rect key="frame" x="0.0" y="0.0" width="1508" height="1348"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -1756,7 +1756,7 @@
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="693" id="5xR-dD-viR"/>
                                                 </constraints>
-                                                <buttonCell key="cell" type="push" title="ADD EMI DETAILES" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="G0p-7H-cpl">
+                                                <buttonCell key="cell" type="push" title="ADD SECURITY DETAILES" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="G0p-7H-cpl">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
@@ -1883,7 +1883,7 @@
                                                             </prototypeCellViews>
                                                         </tableColumn>
                                                         <tableColumn identifier="emiDetailsDetailsColumn" width="763" minWidth="10" maxWidth="3.4028234663852886e+38" id="2ym-Ie-Iub">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="EMI DETAILS">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="SECURITY DETAILS">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2703,10 +2703,10 @@
             </objects>
             <point key="canvasLocation" x="-342" y="262"/>
         </scene>
-        <!--ADD EMI DETAILES-->
+        <!--SECURITY DETAILES-->
         <scene sceneID="29k-8o-9sJ">
             <objects>
-                <viewController title="ADD EMI DETAILES" id="EEp-o8-zec" customClass="AddEmiDetailVC" customModule="DSP" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="SECURITY DETAILES" id="EEp-o8-zec" customClass="AddEmiDetailVC" customModule="DSP" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="QCs-sz-Oxe">
                         <rect key="frame" x="0.0" y="0.0" width="1190" height="62"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -2719,7 +2719,7 @@
                                         <constraints>
                                             <constraint firstAttribute="width" constant="86" id="tfu-AF-qzK"/>
                                         </constraints>
-                                        <textFieldCell key="cell" lineBreakMode="clipping" title="EMI DETAILES" id="tFh-AW-dbq">
+                                        <textFieldCell key="cell" lineBreakMode="clipping" title="DETAILES" id="tFh-AW-dbq">
                                             <font key="font" usesAppearanceFont="YES"/>
                                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

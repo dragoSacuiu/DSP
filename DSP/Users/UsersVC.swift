@@ -10,13 +10,13 @@ import Cocoa
 
 class UsersVC: NSViewController {
 
-    let storeData = StoreUsers()
+    private let storeData = StoreUsers()
 
     @IBOutlet weak var usersTableView: NSTableView!
     @IBOutlet weak var managersTableView: NSTableView!
     
-    var usersTableViewSelectedRow = 0
-    var managersTableViewSelectedRow = 0
+    private var usersTableViewSelectedRow = 0
+    private var managersTableViewSelectedRow = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()

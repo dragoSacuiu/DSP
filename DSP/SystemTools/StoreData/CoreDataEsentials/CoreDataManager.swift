@@ -21,7 +21,7 @@ final class CoreDataManager {
         return NSManagedObjectModel.init(contentsOf: modelURL!)!
     }()
     
-    lazy var dataBaseDirectory = URL(fileURLWithPath: "/Volumes/home/DSP/DSP/SystemTools/StoreData/DataBase")
+    lazy var dataBaseDirectory = URL(fileURLWithPath: "/Volumes/home/app/DSP/DSP/SystemTools/StoreData/DataBase/DataBase")
     
     lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: managedObjectModel)

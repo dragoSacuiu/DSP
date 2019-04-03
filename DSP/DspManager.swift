@@ -18,32 +18,32 @@ class DspManager: AddAcccountVCDelegate {
     
     var dspVCDelegate: DspVCDelegate?
     
-    var reciversManager = ReciversManager()
+    private var reciversManager = ReciversManager()
     var storeData = DspStoreData()
     
-    var runDispatchTimer: Timer?
+    private var runDispatchTimer: Timer?
     
     var accountsEvents = [AccountEvents]()
     var serviceModeAccounts = [AccountEvents]()
     
-    let redColor = NSColor.systemRed.cgColor
-    let blueColor = NSColor.systemBlue.cgColor
-    let greenColor = NSColor.systemGreen.cgColor
-    let orangeColor = NSColor.systemOrange.cgColor
-    let grayColor = NSColor.lightGray.cgColor
-    let whiteColor = NSColor.white.cgColor
+    private let redColor = NSColor.systemRed.cgColor
+    private let blueColor = NSColor.systemBlue.cgColor
+    private let greenColor = NSColor.systemGreen.cgColor
+    private let orangeColor = NSColor.systemOrange.cgColor
+    private let grayColor = NSColor.lightGray.cgColor
+    private let whiteColor = NSColor.white.cgColor
     
-    let eventRestoreColor = NSColor.white.cgColor
-    let systemDisarmColor = NSColor.systemYellow.cgColor
+    private  let eventRestoreColor = NSColor.white.cgColor
+    private let systemDisarmColor = NSColor.systemYellow.cgColor
     
-    let medicalAlarmImage = NSImage(named: "MedicalAlarm")!
-    let panicAlarmImage = NSImage(named: "PanicImage")!
-    let burglarAlarmImage = NSImage(named: "BurglarAlarmImage")!
-    let fireAlarmImage = NSImage(named: "FireAlarmImage")!
-    let generalAlarmImage = NSImage(named: "GeneralAlarm")!
-    let troubleImage = NSImage(named: "TroubleImage")!
-    let openCloseImage = NSImage(named: "OpenCloseImage")!
-    let unknownImage = NSImage(named: "UnknownImage")!
+    private let medicalAlarmImage = NSImage(named: "MedicalAlarm")!
+    private let panicAlarmImage = NSImage(named: "PanicImage")!
+    private let burglarAlarmImage = NSImage(named: "BurglarAlarmImage")!
+    private let fireAlarmImage = NSImage(named: "FireAlarmImage")!
+    private let generalAlarmImage = NSImage(named: "GeneralAlarm")!
+    private let troubleImage = NSImage(named: "TroubleImage")!
+    private let openCloseImage = NSImage(named: "OpenCloseImage")!
+    private let unknownImage = NSImage(named: "UnknownImage")!
     
     func run(getEventsTimeInterval: Double) {
         reciversManager.blackList = storeData.getBlackList()
@@ -71,7 +71,7 @@ class DspManager: AddAcccountVCDelegate {
         }
     }
     
-    func filterEvents(account: AccountEvents) -> AccountEvents? {
+    private func filterEvents(account: AccountEvents) -> AccountEvents? {
         var matchAccount = false
         if accountsEvents.count == 0 && serviceModeAccounts.count == 0 { return addNewAccount(newAccount: account) }
         if addExistingAccount(accountsEvents: serviceModeAccounts, newAccount: account) ||
@@ -80,7 +80,7 @@ class DspManager: AddAcccountVCDelegate {
         return nil
     }
     
-    func addExistingAccount(accountsEvents: [AccountEvents], newAccount: AccountEvents) -> Bool {
+    private func addExistingAccount(accountsEvents: [AccountEvents], newAccount: AccountEvents) -> Bool {
         for account in accountsEvents {
             if account.id == newAccount.id {
                 let accountNewPriorityEvent = getPriorityEvent(events: newAccount.events)
@@ -97,7 +97,7 @@ class DspManager: AddAcccountVCDelegate {
         return false
     }
     
-    func addNewAccount(newAccount: AccountEvents) -> AccountEvents? {
+    private func addNewAccount(newAccount: AccountEvents) -> AccountEvents? {
         if let accountModel = storeData.getAccount(accountId: newAccount.id) {
             newAccount.priorityEvent = getPriorityEvent(events: newAccount.events)
             newAccount.priorityEventType = getEventType(event: newAccount.priorityEvent!)
@@ -143,7 +143,7 @@ extension DspManager {
         reciversManager.removeFromBlackList(accountID: accountID)
     }
 
-    func deleteLowPriorityEvents() {
+    private func deleteLowPriorityEvents() {
         if accountsEvents.count > 0 {
             for accountIndex in 0..<accountsEvents.count {
                 if accountsEvents[accountIndex].priorityEvent!.priority > 6 {
@@ -153,7 +153,7 @@ extension DspManager {
         }
     }
     
-    func getPriorityEvent(events: [Event]) -> Event {
+    private func getPriorityEvent(events: [Event]) -> Event {
         var sortedEvents = events.sorted(by: {$0.priority < $1.priority })
         return sortedEvents[0]
     }

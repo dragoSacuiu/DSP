@@ -19,8 +19,8 @@ protocol AddTicketVCDelegate {
 class AddTicketVC: NSViewController {
     var delegate: AddTicketVCDelegate?
     
-    var ticket: TicketEntity?
-    var ticketTypes = ["MESSAGE","COMPLAINT"]
+    private var ticket: TicketEntity?
+    private var ticketTypes = ["MESSAGE","COMPLAINT"]
     
     var editButtonPresed = false
 

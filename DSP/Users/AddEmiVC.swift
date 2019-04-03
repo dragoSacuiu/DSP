@@ -15,7 +15,7 @@ protocol AddEmiVCDelegate {
 }
 
 class AddEmiVC: NSViewController, AddEmiLocationVCDelegate {    
-    let dspAlert = DspAlert()
+    private let dspAlert = DspAlert()
     var delegate: DSPViewController?
     
     var coordinate = (long: Double(), lat: Double())
@@ -28,7 +28,7 @@ class AddEmiVC: NSViewController, AddEmiLocationVCDelegate {
     @IBOutlet weak var addEmiButtonOutlet: NSButton!
     var editButtonPresed = false
 
-    var emi: EmiEntity?
+    private var emi: EmiEntity?
     
     override func viewDidLoad() {
         super.viewDidLoad()

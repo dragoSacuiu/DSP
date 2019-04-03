@@ -22,7 +22,7 @@ class AddEmiDetailVC: NSViewController {
     @IBOutlet weak var addDetailButtonOutlet: NSButton!
     @IBOutlet weak var detailTextField: NSTextField!
     
-    var emiDetail: EmiDetailesEntity?
+    private var emiDetail: EmiDetailesEntity?
     var editButtonPressed = false
     
     override func viewDidLoad() {

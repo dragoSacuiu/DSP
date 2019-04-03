@@ -16,12 +16,12 @@ protocol ServiceModeVCDelegate {
 class ServiceModeAccountsVC: NSViewController, NSTableViewDelegate, NSTableViewDataSource {
 
     var delegate: DSPViewController?
-    var serviceModeAccounts: [AccountEvents]?
+    private var serviceModeAccounts: [AccountEvents]?
     
-    let dateFormater = DateFormatter()
+    private let dateFormater = DateFormatter()
     
     @IBOutlet weak var serviceModeTableView: NSTableView!
-    var selectedRow = 0
+    private var selectedRow = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
